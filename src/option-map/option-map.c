@@ -1,12 +1,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "option-map.h"
 #include "../mem-utils/mem-macros.h"
 
 #ifdef MEM_DEBUG
 #include "../mem-utils/mem-debug.h"
 #endif
+
+#include "option-map.h"
 
 static struct OptionMapError om_last_error = { OM_NO_ERROR, NULL };
 
