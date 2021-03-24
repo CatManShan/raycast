@@ -27,6 +27,12 @@ enum Material {
 
 int main()
 {
+#ifdef MEM_DEBUG
+	FILE *debug_file = fopen("mem-debug.log", "w");
+	debug_set_out_stream(debug_file);
+	debug_start();
+#endif // MEM_DEBUG
+
 	struct REMap *map = re_map_create(16, 16);
 	map_init(map);
 	map_print(map);
@@ -37,6 +43,13 @@ int main()
 	draw_frame(map, pixel_buffer, 8, 8, PI / 4);
 
 	re_map_destroy(map);
+
+#ifdef MEM_DEBUG
+	fprintf(debug_file, "Unfreed pointers:\n");
+	debug_print_allocated();
+	fclose(debug_file);
+	debug_end();
+#endif // MEM_DEBUG
 
 	return EXIT_SUCCESS;
 }
