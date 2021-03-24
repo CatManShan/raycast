@@ -53,10 +53,10 @@ int main()
 
 	struct REMap *map = re_map_create(32, 24);
 	map_init(map);
-	map_print(map);
+	// map_print(map);
 	printf("\n");
 
-	struct SCGBuffer *pixel_buffer = scg_pixel_buffer_create(96, 64);
+	struct SCGBuffer *pixel_buffer = scg_pixel_buffer_create(158, 86);
 	scg_pixel_buffer_make_space(pixel_buffer);
 	scg_input_adjust();
 
