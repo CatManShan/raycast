@@ -1,6 +1,6 @@
 CC     = gcc
 OPTIMIZATION = -O3
-CFLAGS = -Wall -Wextra -Wpedantic -std=c99
+CFLAGS = -Wall -Wextra -Wpedantic -std=c99 $(OPTIMIZATION)
 LIBS   = -pthread -lm
 
 DEPS = src/simpcg/simpcg.h \
