@@ -60,17 +60,17 @@ int scg_input_restore();
 
 /*** SCGPixelBuffer ***/
 
-struct SCGBuffer *scg_pixel_buffer_create(uint8_t width, uint8_t height); void scg_pixel_buffer_destroy(struct SCGBuffer *board);
+struct SCGBuffer *scg_pixel_buffer_create(uint8_t width, uint8_t height); void scg_pixel_buffer_destroy(struct SCGBuffer *pixel_buffer);
 
-void scg_pixel_buffer_set(struct SCGBuffer *board, uint8_t col, uint8_t row, enum SCGColorCode color);
-enum SCGColorCode scg_pixel_buffer_get(struct SCGBuffer *board, uint8_t col, uint8_t row);
+void scg_pixel_buffer_set(struct SCGBuffer *pixel_buffer, uint8_t col, uint8_t row, enum SCGColorCode color);
+enum SCGColorCode scg_pixel_buffer_get(struct SCGBuffer *pixel_buffer, uint8_t col, uint8_t row);
 
-void scg_pixel_buffer_fill(struct SCGBuffer *board, enum SCGColorCode color);
+void scg_pixel_buffer_fill(struct SCGBuffer *pixel_buffer, enum SCGColorCode color);
 
-void scg_pixel_buffer_make_space(struct SCGBuffer *board);
-void scg_pixel_buffer_remove_space(struct SCGBuffer *board);
+void scg_pixel_buffer_make_space(struct SCGBuffer *pixel_buffer);
+void scg_pixel_buffer_remove_space(struct SCGBuffer *pixel_buffer);
 
-void scg_pixel_buffer_print(struct SCGBuffer *board);
+void scg_pixel_buffer_print(struct SCGBuffer *pixel_buffer);
 
 #endif // simpcg_h
 
