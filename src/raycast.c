@@ -42,6 +42,7 @@ int main()
 
 	draw_frame(map, pixel_buffer, 8, 8, PI / 4);
 
+	scg_pixel_buffer_destroy(pixel_buffer);
 	re_map_destroy(map);
 
 #ifdef MEM_DEBUG
