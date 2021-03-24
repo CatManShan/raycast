@@ -109,10 +109,11 @@ int main()
 		usleep(1000000 / 60);
 	}
 
+	scg_pixel_buffer_remove_space(pixel_buffer);
 	scg_pixel_buffer_destroy(pixel_buffer);
-	re_map_destroy(map);
-
 	scg_input_restore();
+
+	re_map_destroy(map);
 
 #ifdef MEM_DEBUG
 	fprintf(debug_file, "Unfreed pointers:\n");
