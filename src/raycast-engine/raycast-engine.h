@@ -4,11 +4,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-enum REOrientation {
-	RE_HORIZONTAL,
-	RE_VERTICAL
-};
-
 struct REMap {
 	uint32_t width;
 	uint32_t height;
