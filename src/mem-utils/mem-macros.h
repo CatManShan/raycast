@@ -12,5 +12,7 @@
 #define ALLOC_STR_LENGTH(length) malloc(length + 1)
 #define ALLOC_STR_SIZE(size) malloc(size)
 
+#define REINTERPRET(ptr, type) *(type *) &ptr
+
 #endif // mem_macros_h
 
