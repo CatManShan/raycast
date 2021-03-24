@@ -17,6 +17,7 @@ void re_map_destroy(struct REMap *map);
 
 int re_map_get_material(struct REMap *map, uint32_t x, uint32_t y);
 void re_map_set_material(struct REMap *map, uint32_t x, uint32_t y, int material);
+void re_map_fill(struct REMap *map, int material);
 
 double re_raycast(uint32_t origin_x, uint32_t origin_y, double angle,
 		uint32_t *collision_x, uint32_t collision_y);
