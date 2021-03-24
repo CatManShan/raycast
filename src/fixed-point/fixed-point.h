@@ -4,13 +4,11 @@
 #include <stdint.h>
 
 struct FixedPoint64 {
-	int32_t integer;
-	uint32_t fraction;
+	int64_t as_int;
 };
 
 struct UFixedPoint64 {
-	uint32_t integer;
-	uint32_t fraction;
+	uint64_t as_uint;
 };
 
 double fixed_point64_to_double(struct FixedPoint64 value);
