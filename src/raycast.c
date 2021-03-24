@@ -100,6 +100,8 @@ int main()
 		case TURN_RIGHT:
 			player.rotation -= PI / 16;
 			break;
+		default:
+			break;
 		}
 		control.value = NONE;
 
