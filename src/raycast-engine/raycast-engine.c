@@ -4,6 +4,10 @@
 
 #include "../mem-utils/mem-macros.h"
 
+#ifdef MEM_DEBUG
+#include "../mem-utils/mem-debug.h"
+#endif // MEM_DEBUG
+
 #include "raycast-engine.h"
 
 #define THRESHOLD 0x0.001p0
