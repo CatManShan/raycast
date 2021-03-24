@@ -38,7 +38,6 @@ enum Material {
 
 static void map_init(struct REMap *map);
 static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double origin_x, double origin_y, double forward_angle);
-static void map_print(struct REMap *map);
 static void angle_to_vector(double angle, double length, double *vec_x, double *vec_y);
 static double coords_to_angle(double x, double y);
 static double reduce_angle(double angle);
@@ -131,16 +130,16 @@ int main()
 
 static void map_init(struct REMap *map)
 {
-	re_map_fill(map, FLOOR);
+	re_map_fill(map, RE_MAP_CELL_SOLID(FLOOR));
 
 	for (size_t x = 4; x < 12; x++) {
-		re_map_set_material(map, x, 11, BRIGHT_BLUE_WALL);
+		re_map_set_cell(map, x, 11, RE_MAP_CELL_SOLID(BRIGHT_BLUE_WALL));
 	}
 	for (size_t y = 9; y < 11; y++) {
-		re_map_set_material(map, 4, y, BLUE_WALL);
+		re_map_set_cell(map, 4, y, RE_MAP_CELL_SOLID(BLUE_WALL));
 	}
 
-	re_map_set_material(map, 14, 3, YELLOW_WALL);
+	re_map_set_cell(map, 14, 3, RE_MAP_CELL_SOLID(YELLOW_WALL));
 }
 
 static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double origin_x, double origin_y, double forward_angle)
@@ -196,16 +195,6 @@ static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double
 
 	// Print
 	scg_pixel_buffer_print(pixel_buffer);
-}
-
-static void map_print(struct REMap *map)
-{
-	for (uint32_t y = 0; y < map->height; y++) {
-		for (uint32_t x = 0; x < map->width; x++) {
-			printf("%d ", re_map_get_material(map, x, (map->height - 1) - y));
-		}
-		printf("\n");
-	}
 }
 
 static void angle_to_vector(double angle, double length, double *vec_x, double *vec_y)

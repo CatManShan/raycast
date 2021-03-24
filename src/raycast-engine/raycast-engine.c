@@ -34,21 +34,21 @@ void re_map_destroy(struct REMap *map)
 	free(map);
 }
 
-int re_map_get_material(struct REMap *map, uint32_t x, uint32_t y)
+struct REMapCell re_map_get_cell(struct REMap *map, uint32_t x, uint32_t y)
 {
-	return map->cells[y * map->width + x].material;
+	return map->cells[y * map->width + x];
 }
 
-void re_map_set_material(struct REMap *map, uint32_t x, uint32_t y, int material)
+void re_map_set_cell(struct REMap *map, uint32_t x, uint32_t y, struct REMapCell cell)
 {
-	map->cells[y * map->width + x].material = material;
+	map->cells[y * map->width + x] = cell;
 }
 
-void re_map_fill(struct REMap *map, int material)
+void re_map_fill(struct REMap *map, struct REMapCell cell)
 {
 	uint64_t area = (uint64_t) map->width * map->height;
 	for (uint64_t index = 0; index < area; index++) {
-		map->cells[index].material = material;
+		map->cells[index] = cell;
 	}
 }
 
@@ -126,20 +126,20 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 				found_coords[1] = check_y;
 
 				*collided_material = out_of_bounds_material;
-			} else if (re_map_get_material(map, (int32_t) x_intercept, check_y) != transparent_material) { // Check if bottom is wall
+			} else if (re_map_get_cell(map, (int32_t) x_intercept, check_y).material_bottom != transparent_material) { // Check if bottom is wall
 				found_horiz_wall = true;
 				found_coords[0] = x_intercept;
 				found_coords[1] = check_y;
 
 				texture_unit_phase = x_intercept;
 
-				*collided_material = re_map_get_material(map, (int32_t) x_intercept, check_y);
-			} else if (check_y > 0 && re_map_get_material(map, (int32_t) x_intercept, check_y - 1) != transparent_material) { // Check if top is wall
+				*collided_material = re_map_get_cell(map, (int32_t) x_intercept, check_y).material_bottom;
+			} else if (check_y > 0 && re_map_get_cell(map, (int32_t) x_intercept, check_y - 1).material_top != transparent_material) { // Check if top is wall
 				found_horiz_wall = true;
 				found_coords[0] = x_intercept;
 				found_coords[1] = check_y;
 
-				*collided_material = re_map_get_material(map, (int32_t) x_intercept, check_y - 1);
+				*collided_material = re_map_get_cell(map, (int32_t) x_intercept, check_y - 1).material_top;
 			} else { // Step
 				check_y += tile_step_y;
 				x_intercept += step_x;
@@ -166,20 +166,20 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 				texture_unit_phase = y_intercept;
 
 				*collided_material = out_of_bounds_material;
-			} else if (re_map_get_material(map, check_x, (int32_t) y_intercept) != transparent_material) { // Check if left is wall
+			} else if (re_map_get_cell(map, check_x, (int32_t) y_intercept).material_left != transparent_material) { // Check if left is wall
 				found_vert_wall = true;
 				found_coords[0] = check_x;
 				found_coords[1] = y_intercept;
 
-				*collided_material = re_map_get_material(map, check_x, (int32_t) y_intercept);
-			} else if (check_x > 0 && re_map_get_material(map, check_x - 1, (int32_t) y_intercept) != transparent_material) { // Check if right is wall
+				*collided_material = re_map_get_cell(map, check_x, (int32_t) y_intercept).material_left;
+			} else if (check_x > 0 && re_map_get_cell(map, check_x - 1, (int32_t) y_intercept).material_right != transparent_material) { // Check if right is wall
 				found_vert_wall = true;
 				found_coords[0] = check_x;
 				found_coords[1] = y_intercept;
 
 				texture_unit_phase = y_intercept;
 
-				*collided_material = re_map_get_material(map, check_x - 1, (int32_t) y_intercept);
+				*collided_material = re_map_get_cell(map, check_x - 1, (int32_t) y_intercept).material_right;
 			} else { // Step
 				check_x += tile_step_x;
 				y_intercept += step_y;
