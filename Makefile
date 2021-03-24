@@ -4,10 +4,12 @@ CFLAGS = -Wall -Wextra -Wpedantic -std=c99 $(OPTIMIZATION)
 LIBS   = -pthread -lm
 
 DEPS = src/simpcg/simpcg.h \
+       src/raycast-engine/raycast-engine.h \
        src/option-map/option-map.h \
        $(DEBUG_DEPS)
 
 OBJS = obj/raycast.o \
+       obj/raycast-engine.o \
        obj/scg-buffer.o \
        obj/scg-pixel-buffer.o \
        obj/option-map.o \
@@ -35,6 +37,11 @@ bin/raycast: $(OBJS)
 	$(CC) -o $@ $^ $(LIBS) $(DEFINES)
 
 obj/raycast.o: src/raycast.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
+
+# raycast-engine
+
+obj/raycast-engine.o: src/raycast-engine/raycast-engine.c src/raycast-engine/raycast-engine.h $(DEBUG_DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
 
 # simpcg
