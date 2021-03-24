@@ -13,12 +13,13 @@ OBJS = obj/raycast.o \
        obj/option-map.o \
        $(DEBUG_OBJS)
 
-DEFINES = -DNDEBUG
+DEBUG = -DNDEBUG
+DEFINES = $(DEBUG)
 
 all: make-dirs bin/raycast
 
 debug:
-	make all DEBUG_DEPS=src/mem-utils/mem-debug.h DEBUG_OBJS=obj/mem-debug.o OPTIMIZATION=-g DEFINES=-DMEM_DEBUG
+	make all DEBUG_DEPS=src/mem-utils/mem-debug.h DEBUG_OBJS=obj/mem-debug.o OPTIMIZATION=-g DEBUG=-DMEM_DEBUG
 
 make-dirs: obj/ bin/
 
