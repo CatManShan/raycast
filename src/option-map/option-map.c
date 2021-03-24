@@ -1,13 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "option-map.h"
 #include "../mem-utils/mem-macros.h"
 
 #ifdef MEM_DEBUG
 #include "../mem-utils/mem-debug.h"
 #endif
-
-#include "option-map.h"
 
 static struct OptionMapError om_last_error = { OM_NO_ERROR, NULL };
 
@@ -55,7 +54,7 @@ void option_map_destroy(struct OptionMap *option_map)
 
 struct OptionMapError option_map_set_options(struct OptionMap *option_map, int options_list_length, char **options_list)
 {
-	for (size_t option_num = 0; option_num < options_list_length; ++option_num) {
+	for (int option_num = 0; option_num < options_list_length; ++option_num) {
 		char *option_alias = options_list[option_num];
 
 		struct OptionMapOption *option = option_map_get_option_by_alias(option_map, option_alias);
@@ -151,6 +150,7 @@ static char *str_dup(const char *str)
 	return str_copy;
 }
 
+#ifdef UNUSED
 static char *str_n_dup(const char *str, size_t length)
 {
 	if (str == NULL) {
@@ -170,6 +170,7 @@ static char *str_n_dup(const char *str, size_t length)
 
 	return str_copy;
 }
+#endif // UNUSED
 
 static size_t str_arr_len(char **str_arr)
 {

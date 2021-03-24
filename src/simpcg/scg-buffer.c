@@ -144,13 +144,13 @@ static uint8_t scg_color_code_to_ansi_bg(enum SCGColorCode color_code)
 	return color_code + 49;
 }
 
-void scg_input_adjust()
+int scg_input_adjust()
 {
-	system("stty raw -echo");
+	return system("stty raw -echo");
 }
 
-void scg_input_restore()
+int scg_input_restore()
 {
-	system("stty cooked echo");
+	return system("stty cooked echo");
 }
 
