@@ -36,30 +36,30 @@ bin/raycast: $(OBJS)
 	$(CC) -o $@ $^ $(LIBS) $(DEFINES)
 
 obj/raycast.o: src/raycast.c $(DEPS)
-	$(CC) -c -o $@ $< $(DEFINES)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
 
 # fixed-point
 
 obj/fixed-point.o: src/fixed-point/fixed-point.c src/fixed-point/fixed-point.h $(DEBUG_DEPS)
-	$(CC) -c -o $@ $< $(DEFINES)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
 
 # simpcg
 
 obj/scg-buffer.o: src/simpcg/scg-buffer.c src/simpcg/simpcg.h $(DEBUG_DEPS)
-	$(CC) -c -o $@ $< $(DEFINES)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
 
 obj/scg-pixel-buffer.o: src/simpcg/scg-pixel-buffer.c src/simpcg/simpcg.h $(DEBUG_DEPS)
-	$(CC) -c -o $@ $< $(DEFINES)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
 
 # option-map
 
 obj/option-map.o: src/option-map/option-map.c src/option-map/option-map.h $(DEBUG_DEPS)
-	$(CC) -c -o $@ $< $(DEFINES)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
 
 # mem-debug
 
 obj/mem-debug.o: src/mem-utils/mem-debug.c src/mem-utils/mem-debug.h
-	$(CC) -c -o $@ $< $(DEFINES)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
 
 #clean
 
