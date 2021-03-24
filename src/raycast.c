@@ -31,7 +31,9 @@ struct Control {
 enum Material {
 	OUT_OF_BOUNDS = SCG_COLOR_BRIGHT_BLACK,
 	FLOOR = SCG_COLOR_BLACK,
-	WALL = SCG_COLOR_BLUE
+	BLUE_WALL = SCG_COLOR_BLUE,
+	BRIGHT_BLUE_WALL = SCG_COLOR_BRIGHT_BLUE,
+	YELLOW_WALL = SCG_COLOR_YELLOW
 };
 
 static void map_init(struct REMap *map);
@@ -56,7 +58,7 @@ int main()
 	// map_print(map);
 	printf("\n");
 
-	struct SCGBuffer *pixel_buffer = scg_pixel_buffer_create(158, 86);
+	struct SCGBuffer *pixel_buffer = scg_pixel_buffer_create(118, 69);
 	scg_pixel_buffer_make_space(pixel_buffer);
 	scg_input_adjust();
 
@@ -72,33 +74,35 @@ int main()
 	} player = { 8, 8, PI / 2 };
 
 	while (control.value != QUIT) {
+		const double PLAYER_SPEED = 0.25;
+		const double PLAYER_TURN_SPEED = PI / 64;
 		double move_x, move_y;
 		switch (control.value) {
 		case FORWARD:
-			angle_to_vector(player.rotation, 1, &move_x, &move_y);
+			angle_to_vector(player.rotation, PLAYER_SPEED, &move_x, &move_y);
 			player.pos_x += move_x;
 			player.pos_y += move_y;
 			break;
 		case BACKWARD:
-			angle_to_vector(player.rotation + PI, 1, &move_x, &move_y);
+			angle_to_vector(player.rotation + PI, PLAYER_SPEED, &move_x, &move_y);
 			player.pos_x += move_x;
 			player.pos_y += move_y;
 			break;
 		case LEFT:
-			angle_to_vector(player.rotation + PI / 2, 1, &move_x, &move_y);
+			angle_to_vector(player.rotation + PI / 2, PLAYER_SPEED, &move_x, &move_y);
 			player.pos_x += move_x;
 			player.pos_y += move_y;
 			break;
 		case RIGHT:
-			angle_to_vector(player.rotation - PI / 2, 1, &move_x, &move_y);
+			angle_to_vector(player.rotation - PI / 2, PLAYER_SPEED, &move_x, &move_y);
 			player.pos_x += move_x;
 			player.pos_y += move_y;
 			break;
 		case TURN_LEFT:
-			player.rotation += PI / 16;
+			player.rotation += PLAYER_TURN_SPEED;
 			break;
 		case TURN_RIGHT:
-			player.rotation -= PI / 16;
+			player.rotation -= PLAYER_TURN_SPEED;
 			break;
 		default:
 			break;
@@ -130,8 +134,13 @@ static void map_init(struct REMap *map)
 	re_map_fill(map, FLOOR);
 
 	for (size_t x = 4; x < 12; x++) {
-		re_map_set_material(map, x, 11, WALL);
+		re_map_set_material(map, x, 11, BRIGHT_BLUE_WALL);
 	}
+	for (size_t y = 9; y < 11; y++) {
+		re_map_set_material(map, 4, y, BLUE_WALL);
+	}
+
+	re_map_set_material(map, 14, 3, YELLOW_WALL);
 }
 
 static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double origin_x, double origin_y, double forward_angle)
