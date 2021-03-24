@@ -28,8 +28,8 @@ enum SCGColorCode {
 /*** SCGBuffer ***/
 
 struct SCGBuffer {
-	uint8_t width;
-	uint8_t height;
+	uint16_t width;
+	uint16_t height;
 	struct SCGCell {
 		char ch;
 		enum SCGColorCode fg_color : 8;
@@ -37,15 +37,15 @@ struct SCGBuffer {
 	} cells[];
 };
 
-struct SCGBuffer *scg_buffer_create(uint8_t width, uint8_t height);
+struct SCGBuffer *scg_buffer_create(uint16_t width, uint16_t height);
 void scg_buffer_destroy(struct SCGBuffer *buffer);
 
-void scg_buffer_set_ch(struct SCGBuffer *buffer, uint8_t col, uint8_t row, char ch);
-char scg_buffer_get_ch(struct SCGBuffer *buffer, uint8_t col, uint8_t row);
-void scg_buffer_set_fg_color(struct SCGBuffer *buffer, uint8_t col, uint8_t row, enum SCGColorCode fg_color);
-enum SCGColorCode scg_buffer_get_fg_color(struct SCGBuffer *buffer, uint8_t col, uint8_t row);
-void scg_buffer_set_bg_color(struct SCGBuffer *buffer, uint8_t col, uint8_t row, enum SCGColorCode bg_color);
-enum SCGColorCode scg_buffer_get_bg_color(struct SCGBuffer *buffer, uint8_t col, uint8_t row);
+void scg_buffer_set_ch(struct SCGBuffer *buffer, uint16_t col, uint16_t row, char ch);
+char scg_buffer_get_ch(struct SCGBuffer *buffer, uint16_t col, uint16_t row);
+void scg_buffer_set_fg_color(struct SCGBuffer *buffer, uint16_t col, uint16_t row, enum SCGColorCode fg_color);
+enum SCGColorCode scg_buffer_get_fg_color(struct SCGBuffer *buffer, uint16_t col, uint16_t row);
+void scg_buffer_set_bg_color(struct SCGBuffer *buffer, uint16_t col, uint16_t row, enum SCGColorCode bg_color);
+enum SCGColorCode scg_buffer_get_bg_color(struct SCGBuffer *buffer, uint16_t col, uint16_t row);
 
 void scg_buffer_fill_ch(struct SCGBuffer *buffer, char ch);
 void scg_buffer_fill_fg_color(struct SCGBuffer *buffer, enum SCGColorCode fg_color);
@@ -60,10 +60,10 @@ int scg_input_restore();
 
 /*** SCGPixelBuffer ***/
 
-struct SCGBuffer *scg_pixel_buffer_create(uint8_t width, uint8_t height); void scg_pixel_buffer_destroy(struct SCGBuffer *pixel_buffer);
+struct SCGBuffer *scg_pixel_buffer_create(uint16_t width, uint16_t height); void scg_pixel_buffer_destroy(struct SCGBuffer *pixel_buffer);
 
-void scg_pixel_buffer_set(struct SCGBuffer *pixel_buffer, uint8_t col, uint8_t row, enum SCGColorCode color);
-enum SCGColorCode scg_pixel_buffer_get(struct SCGBuffer *pixel_buffer, uint8_t col, uint8_t row);
+void scg_pixel_buffer_set(struct SCGBuffer *pixel_buffer, uint16_t col, uint16_t row, enum SCGColorCode color);
+enum SCGColorCode scg_pixel_buffer_get(struct SCGBuffer *pixel_buffer, uint16_t col, uint16_t row);
 
 void scg_pixel_buffer_fill(struct SCGBuffer *pixel_buffer, enum SCGColorCode color);
 
