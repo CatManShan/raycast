@@ -5,11 +5,9 @@ LIBS   = -pthread -lm
 
 DEPS = src/simpcg/simpcg.h \
        src/option-map/option-map.h \
-       src/fixed-point/fixed-point.c
        $(DEBUG_DEPS)
 
 OBJS = obj/raycast.o \
-       obj/fixed-point.o \
        obj/scg-buffer.o \
        obj/scg-pixel-buffer.o \
        obj/option-map.o \
@@ -36,11 +34,6 @@ bin/raycast: $(OBJS)
 	$(CC) -o $@ $^ $(LIBS) $(DEFINES)
 
 obj/raycast.o: src/raycast.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
-
-# fixed-point
-
-obj/fixed-point.o: src/fixed-point/fixed-point.c src/fixed-point/fixed-point.h $(DEBUG_DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
 
 # simpcg
