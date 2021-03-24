@@ -33,6 +33,7 @@ enum Material {
 	FLOOR = SCG_COLOR_BLACK,
 	BLUE_WALL = SCG_COLOR_BLUE,
 	BRIGHT_BLUE_WALL = SCG_COLOR_BRIGHT_BLUE,
+	RED_WALL = SCG_COLOR_RED,
 	YELLOW_WALL = SCG_COLOR_YELLOW
 };
 
@@ -132,14 +133,16 @@ static void map_init(struct REMap *map)
 {
 	re_map_fill(map, RE_MAP_CELL_SOLID(FLOOR));
 
+	struct REMapCell blue_wall_cell = (struct REMapCell) { BLUE_WALL, BRIGHT_BLUE_WALL, BLUE_WALL, BRIGHT_BLUE_WALL };
 	for (size_t x = 4; x < 12; x++) {
-		re_map_set_cell(map, x, 11, RE_MAP_CELL_SOLID(BRIGHT_BLUE_WALL));
+		re_map_set_cell(map, x, 11, blue_wall_cell);
 	}
 	for (size_t y = 9; y < 11; y++) {
-		re_map_set_cell(map, 4, y, RE_MAP_CELL_SOLID(BLUE_WALL));
+		re_map_set_cell(map, 4, y, blue_wall_cell);
 	}
 
-	re_map_set_cell(map, 14, 3, RE_MAP_CELL_SOLID(YELLOW_WALL));
+	struct REMapCell funky_cell = (struct REMapCell) { RED_WALL, OUT_OF_BOUNDS, FLOOR, YELLOW_WALL };
+	re_map_set_cell(map, 14, 3, funky_cell);
 }
 
 static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double origin_x, double origin_y, double forward_angle)
