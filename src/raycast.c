@@ -25,12 +25,18 @@ enum Material {
 	YELLOW_WALL = SCG_COLOR_YELLOW
 };
 
+struct Control {
+	volatile char value;
+};
+
 static void map_init(struct REMap *map);
 static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double origin_x, double origin_y, double forward_angle);
 static void angle_to_vector(double angle, double length, double *vec_x, double *vec_y);
 static double coords_to_angle(double x, double y);
 static double reduce_angle(double angle);
 static int32_t min_int32(int32_t a, int32_t b); 
+
+void *input_loop_func(void *vp_control);
 
 int main()
 {
@@ -55,6 +61,10 @@ int main()
 		double rotation;
 	} player = { 8, 8, PI / 2 };
 
+	struct Control control;
+	pthread_t input_thread;
+	pthread_create(&input_thread, NULL, input_loop_func, &control);
+
 	bool quit = false;
 	while (!quit) {
 		draw_frame(map, pixel_buffer, player.pos_x, player.pos_y, player.rotation);
@@ -63,7 +73,7 @@ int main()
 		const double PLAYER_SPEED = 0.25;
 		const double PLAYER_TURN_SPEED = PI / 64;
 		double move_x, move_y;
-		switch (getchar()) {
+		switch (control.value) {
 		case CTRL_C:
 			quit = true;
 			break;
@@ -96,6 +106,7 @@ int main()
 		default:
 			break;
 		}
+		control.value = '\0';
 	}
 
 	scg_pixel_buffer_remove_space(pixel_buffer);
@@ -241,5 +252,16 @@ static double reduce_angle(double angle)
 static int32_t min_int32(int32_t a, int32_t b)
 {
 	return (a < b) ? a : b;
+}
+
+void *input_loop_func(void *vp_control)
+{
+	struct Control *p_control = (struct Control *) vp_control;
+
+	while (p_control->value != CTRL_C) {
+		p_control->value = getchar();
+	}
+
+	return NULL;
 }
 
