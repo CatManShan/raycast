@@ -14,19 +14,7 @@
 #endif
 
 #define PI 3.14159265358979323846
-
-struct Control {
-	volatile enum {
-		NONE,
-		QUIT,
-		FORWARD,
-		BACKWARD,
-		LEFT,
-		RIGHT,
-		TURN_LEFT,
-		TURN_RIGHT
-	} value;
-};
+#define CTRL_C '\003'
 
 enum Material {
 	OUT_OF_BOUNDS = SCG_COLOR_BRIGHT_BLACK,
@@ -43,7 +31,6 @@ static void angle_to_vector(double angle, double length, double *vec_x, double *
 static double coords_to_angle(double x, double y);
 static double reduce_angle(double angle);
 static int32_t min_int32(int32_t a, int32_t b); 
-static void *parse_input_func(void *vp_control);
 
 int main()
 {
@@ -62,55 +49,53 @@ int main()
 	scg_pixel_buffer_make_space(pixel_buffer);
 	scg_input_adjust();
 
-	struct Control control;
-
-	pthread_t input_thread;
-	pthread_create(&input_thread, NULL, &parse_input_func, (void *) &control);
-
 	struct Player {
 		double pos_x;
 		double pos_y;
 		double rotation;
 	} player = { 8, 8, PI / 2 };
 
-	while (control.value != QUIT) {
+	bool quit = false;
+	while (!quit) {
+		draw_frame(map, pixel_buffer, player.pos_x, player.pos_y, player.rotation);
+		usleep(1000000 / 60);
+
 		const double PLAYER_SPEED = 0.25;
 		const double PLAYER_TURN_SPEED = PI / 64;
 		double move_x, move_y;
-		switch (control.value) {
-		case FORWARD:
+		switch (getchar()) {
+		case CTRL_C:
+			quit = true;
+			break;
+		case 'w':
 			angle_to_vector(player.rotation, PLAYER_SPEED, &move_x, &move_y);
 			player.pos_x += move_x;
 			player.pos_y += move_y;
 			break;
-		case BACKWARD:
+		case 's':
 			angle_to_vector(player.rotation + PI, PLAYER_SPEED, &move_x, &move_y);
 			player.pos_x += move_x;
 			player.pos_y += move_y;
 			break;
-		case LEFT:
+		case 'a':
 			angle_to_vector(player.rotation + PI / 2, PLAYER_SPEED, &move_x, &move_y);
 			player.pos_x += move_x;
 			player.pos_y += move_y;
 			break;
-		case RIGHT:
+		case 'd':
 			angle_to_vector(player.rotation - PI / 2, PLAYER_SPEED, &move_x, &move_y);
 			player.pos_x += move_x;
 			player.pos_y += move_y;
 			break;
-		case TURN_LEFT:
+		case 'j':
 			player.rotation += PLAYER_TURN_SPEED;
 			break;
-		case TURN_RIGHT:
+		case 'l':
 			player.rotation -= PLAYER_TURN_SPEED;
 			break;
 		default:
 			break;
 		}
-		control.value = NONE;
-
-		draw_frame(map, pixel_buffer, player.pos_x, player.pos_y, player.rotation);
-		usleep(1000000 / 60);
 	}
 
 	scg_pixel_buffer_remove_space(pixel_buffer);
@@ -256,38 +241,5 @@ static double reduce_angle(double angle)
 static int32_t min_int32(int32_t a, int32_t b)
 {
 	return (a < b) ? a : b;
-}
-
-static void *parse_input_func(void *vp_control)
-{
-	struct Control *p_control = (struct Control *) vp_control;
-
-	while (p_control->value != QUIT) {
-		switch (getchar()) {
-		case 'q':
-			p_control->value = QUIT;
-			break;
-		case 'w':
-			p_control->value = FORWARD;
-			break;
-		case 's':
-			p_control->value = BACKWARD;
-			break;
-		case 'a':
-			p_control->value = LEFT;
-			break;
-		case 'd':
-			p_control->value = RIGHT;
-			break;
-		case 'j':
-			p_control->value = TURN_LEFT;
-			break;
-		case 'l':
-			p_control->value = TURN_RIGHT;
-			break;
-		}
-	}
-
-	return NULL;
 }
 
