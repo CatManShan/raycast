@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "mem-utils/mem-macros.h"
+#include "option-map/option-map.h"
 #include "raycast-engine/raycast-engine.h"
 #include "simpcg/simpcg.h"
 
@@ -29,6 +30,12 @@ struct Control {
 	volatile char value;
 };
 
+struct Options {
+	uint16_t width;
+	uint16_t height;
+};
+
+static struct Options parse_options(int argc, char **argv);
 static void map_init(struct REMap *map);
 static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double origin_x, double origin_y, double forward_angle);
 static void angle_to_vector(double angle, double length, double *vec_x, double *vec_y);
@@ -38,20 +45,22 @@ static int32_t min_int32(int32_t a, int32_t b);
 
 void *input_loop_func(void *vp_control);
 
-int main()
+int main(int argc, char **argv)
 {
 #ifdef MEM_DEBUG
 	FILE *debug_file = fopen("mem-debug.log", "w");
 	debug_set_out_stream(debug_file);
 	debug_start();
 #endif // MEM_DEBUG
+	
+	struct Options options = parse_options(argc - 1, &argv[1]);
 
 	struct REMap *map = re_map_create(32, 24);
 	map_init(map);
 	// map_print(map);
 	printf("\n");
 
-	struct SCGBuffer *pixel_buffer = scg_pixel_buffer_create(118, 69);
+	struct SCGBuffer *pixel_buffer = scg_pixel_buffer_create(options.width, options.height);
 	scg_pixel_buffer_make_space(pixel_buffer);
 	scg_input_adjust();
 
@@ -123,6 +132,34 @@ int main()
 #endif // MEM_DEBUG
 
 	return EXIT_SUCCESS;
+}
+
+static struct Options parse_options(int argc, char **argv)
+{
+	char *size_aliases[] = { "--size", "-s", NULL };
+
+	struct OptionMapOption option_arr[] = {
+		{ .aliases = size_aliases, .takes_value = true }
+	};
+	size_t option_count = 1;
+
+	struct OptionMap *option_map = option_map_create(option_arr, option_count);
+	struct OptionMapError error = option_map_set_options(option_map, argc, argv);
+
+	if (error.error_code != OM_NO_ERROR) {
+		option_map_print_error_message(stderr, "raycast: ", error);
+	}
+
+	struct Options options = { .width = 64, .height = 48 };
+
+	if (option_map_is_option_given(option_map, "--size")) {
+		char *size = option_map_get_option_value(option_map, "--size");
+		sscanf(size, "%hux%hu", &options.width, &options.height);
+	}
+
+	option_map_destroy(option_map);
+
+	return options;
 }
 
 static void map_init(struct REMap *map)
