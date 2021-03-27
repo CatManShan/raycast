@@ -101,24 +101,21 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 	bool found_vert_wall = false;
 
 	double found_coords[2] = {0, 0};
-	double texture_unit_phase = 0;
 	bool out_of_bounds = false;
 
 	*collided_material = out_of_bounds_material;
 
 	while (!found_horiz_wall && !found_vert_wall && !out_of_bounds) {
-		while (double_less_than_or_equal(tile_step_x * x_intercept, tile_step_x * check_x) && !found_horiz_wall /* && !found_vert_wall  && !out_of_bounds*/) {
-			if (!re_map_coords_in_bounds(map, (int32_t) x_intercept, check_y)) { // Check if bottom or top is out-of-bounds
+		while (double_less_than_or_equal(tile_step_x * x_intercept, tile_step_x * check_x) && !found_horiz_wall) {
+			if (!re_map_coords_in_bounds(map, (int32_t) x_intercept, check_y)) { // Check if bottom is out-of-bounds
 				found_horiz_wall = true;
 				out_of_bounds = true;
 
 				found_coords[0] = x_intercept;
 				found_coords[1] = check_y;
 
-				texture_unit_phase = x_intercept;
-
 				*collided_material = out_of_bounds_material;
-			} else if (!re_map_coords_in_bounds(map, (int32_t) x_intercept, check_y - 1)) { // Check if bottom or top is out-of-bounds
+			} else if (!re_map_coords_in_bounds(map, (int32_t) x_intercept, check_y - 1)) { // Check if top out-of-bounds
 				found_horiz_wall = true;
 				out_of_bounds = true;
 
@@ -130,8 +127,6 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 				found_horiz_wall = true;
 				found_coords[0] = x_intercept;
 				found_coords[1] = check_y;
-
-				texture_unit_phase = x_intercept;
 
 				*collided_material = re_map_get_cell(map, (int32_t) x_intercept, check_y).material_bottom;
 			} else if (check_y > 0 && re_map_get_cell(map, (int32_t) x_intercept, check_y - 1).material_top != transparent_material) { // Check if top is wall
@@ -146,7 +141,7 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 			}
 		}
 
-		while (double_less_than_or_equal(tile_step_y * y_intercept, tile_step_y * check_y) && !found_horiz_wall && !found_vert_wall /*&& !out_of_bounds*/)
+		while (double_less_than_or_equal(tile_step_y * y_intercept, tile_step_y * check_y) && !found_horiz_wall && !found_vert_wall)
 		{
 			if (!re_map_coords_in_bounds(map, check_x, (int32_t) y_intercept)) { // Check if left is out-of-bounds
 				found_vert_wall = true;
@@ -163,8 +158,6 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 				found_coords[0] = check_x;
 				found_coords[1] = y_intercept;
 
-				texture_unit_phase = y_intercept;
-
 				*collided_material = out_of_bounds_material;
 			} else if (re_map_get_cell(map, check_x, (int32_t) y_intercept).material_left != transparent_material) { // Check if left is wall
 				found_vert_wall = true;
@@ -177,8 +170,6 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 				found_coords[0] = check_x;
 				found_coords[1] = y_intercept;
 
-				texture_unit_phase = y_intercept;
-
 				*collided_material = re_map_get_cell(map, check_x - 1, (int32_t) y_intercept).material_right;
 			} else { // Step
 				check_x += tile_step_x;
@@ -189,8 +180,6 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 
 	double check_distance = distance_of_points(origin_x, origin_y, found_coords[0], found_coords[1]);
 	double forward_distance = check_distance * cos(rel_angle);
-
-	texture_unit_phase = fmax(0, texture_unit_phase);
 
 #if UNUSED == 1
 	enum REOrientation wall_orientation = (found_horiz_wall ? RE_HORIZONTAL : RE_VERTICAL);
