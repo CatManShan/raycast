@@ -263,7 +263,7 @@ void *input_loop_func(void *vp_data)
 
 	while (!p_data->quit) {
 		const double PLAYER_BASE_SPEED = 0.125;
-		const double PLAYER_TURN_SPEED = PI / 32;
+		const double PLAYER_TURN_SPEED = PI / 48;
 
 		double move_x, move_y;
 
