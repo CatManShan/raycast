@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "../mem-utils/mem-macros.h"
 
@@ -61,15 +62,13 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 	double origin_y_frac = origin_y - origin_y_whole;
 	double absolute_angle = reduce_angle(forward_angle + rel_angle);
 
-#if UNUSED == 1
 	bool quad1 = absolute_angle >= 0 && absolute_angle < PI / 2;
-#endif
 	bool quad2 = absolute_angle >= PI / 2 && absolute_angle < PI;
 	bool quad3 = absolute_angle >= PI && absolute_angle < PI * 3 / 2;
 	bool quad4 = absolute_angle >= PI * 3 / 2 && absolute_angle < PI * 2;
 
-	double x_intercept = origin_x_whole + origin_x_frac + (1 - origin_y_frac) / tan(absolute_angle);
-	double y_intercept = origin_y_whole + origin_y_frac + (1 - origin_x_frac) * tan(absolute_angle);
+	double x_intercept = origin_x + (1 - origin_y_frac) / tan(absolute_angle);
+	double y_intercept = origin_y + (1 - origin_x_frac) * tan(absolute_angle);
 
 	int32_t check_x = origin_x_whole + 1;
 	int32_t check_y = origin_y_whole + 1;
@@ -82,7 +81,7 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 
 	if (quad2 || quad3)
 	{
-		tile_step_x *= -1;
+		tile_step_x = -1;
 		step_y *= -1;
 
 		check_x += tile_step_x;
@@ -90,7 +89,7 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 	}
 	if (quad3 || quad4)
 	{
-		tile_step_y *= -1;
+		tile_step_y = -1;
 		step_x *= -1;
 
 		check_y += tile_step_y;
@@ -100,92 +99,98 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 	bool found_horiz_wall = false;
 	bool found_vert_wall = false;
 
-	double found_coords[2] = {0, 0};
+	double collision_coords[2] = {0, 0};
 	bool out_of_bounds = false;
 
 	*collided_material = out_of_bounds_material;
 
 	while (!found_horiz_wall && !found_vert_wall && !out_of_bounds) {
-		while (double_less_than_or_equal(tile_step_x * x_intercept, tile_step_x * check_x) && !found_horiz_wall) {
-			if (!re_map_coords_in_bounds(map, (int32_t) x_intercept, check_y)) { // Check if bottom is out-of-bounds
+		while (!found_horiz_wall && double_less_than_or_equal(tile_step_x * x_intercept, tile_step_x * check_x)) {
+			int32_t x_intercept_floor = (int32_t) x_intercept;
+			if (!re_map_coords_in_bounds(map, x_intercept_floor, check_y) || !re_map_coords_in_bounds(map, x_intercept_floor, check_y - 1)) {
 				found_horiz_wall = true;
 				out_of_bounds = true;
 
-				found_coords[0] = x_intercept;
-				found_coords[1] = check_y;
+				collision_coords[0] = x_intercept;
+				collision_coords[1] = check_y;
 
 				*collided_material = out_of_bounds_material;
-			} else if (!re_map_coords_in_bounds(map, (int32_t) x_intercept, check_y - 1)) { // Check if top out-of-bounds
-				found_horiz_wall = true;
-				out_of_bounds = true;
+			} else {
+				int top_cell_material    = re_map_get_cell(map, x_intercept_floor, check_y).material_bottom;
+				int bottom_cell_material = re_map_get_cell(map, x_intercept_floor, check_y - 1).material_top;
 
-				found_coords[0] = x_intercept;
-				found_coords[1] = check_y;
+				int materials[2];
+				if (quad1 || quad2) {
+					materials[0] = bottom_cell_material;
+					materials[1] = top_cell_material;
+				} else {
+					materials[0] = top_cell_material;
+					materials[1] = bottom_cell_material;
+				}
 
-				*collided_material = out_of_bounds_material;
-			} else if (re_map_get_cell(map, (int32_t) x_intercept, check_y).material_bottom != transparent_material) { // Check if bottom is wall
-				found_horiz_wall = true;
-				found_coords[0] = x_intercept;
-				found_coords[1] = check_y;
+				if (materials[0] != transparent_material) {
+					*collided_material = materials[0];
+					found_horiz_wall = true;
+				} else if (materials[1] != transparent_material) {
+					*collided_material = materials[1];
+					found_horiz_wall = true;
+				}
 
-				*collided_material = re_map_get_cell(map, (int32_t) x_intercept, check_y).material_bottom;
-			} else if (check_y > 0 && re_map_get_cell(map, (int32_t) x_intercept, check_y - 1).material_top != transparent_material) { // Check if top is wall
-				found_horiz_wall = true;
-				found_coords[0] = x_intercept;
-				found_coords[1] = check_y;
-
-				*collided_material = re_map_get_cell(map, (int32_t) x_intercept, check_y - 1).material_top;
-			} else { // Step
-				check_y += tile_step_y;
-				x_intercept += step_x;
+				if (found_horiz_wall) {
+					collision_coords[0] = x_intercept;
+					collision_coords[1] = check_y;
+				} else { // Step
+					check_y += tile_step_y;
+					x_intercept += step_x;
+				}
 			}
 		}
 
-		while (double_less_than_or_equal(tile_step_y * y_intercept, tile_step_y * check_y) && !found_horiz_wall && !found_vert_wall)
+		while (!found_horiz_wall && !found_vert_wall && double_less_than_or_equal(tile_step_y * y_intercept, tile_step_y * check_y))
 		{
-			if (!re_map_coords_in_bounds(map, check_x, (int32_t) y_intercept)) { // Check if left is out-of-bounds
+			int32_t y_intercept_floor = (int32_t) y_intercept;
+			if (!re_map_coords_in_bounds(map, check_x, y_intercept_floor) || !re_map_coords_in_bounds(map, check_x - 1, y_intercept_floor)) { // Check if left or right out-of-bounds
 				found_vert_wall = true;
 				out_of_bounds = true;
 
-				found_coords[0] = check_x;
-				found_coords[1] = y_intercept;
+				collision_coords[0] = check_x;
+				collision_coords[1] = y_intercept;
 
 				*collided_material = out_of_bounds_material;
-			} else if (!re_map_coords_in_bounds(map, check_x - 1, (int32_t) y_intercept)) { // Check if right is out-of-bounds
-				found_vert_wall = true;
-				out_of_bounds = true;
+			} else {
+				int right_cell_material = re_map_get_cell(map, check_x, y_intercept_floor).material_left;
+				int left_cell_material  = re_map_get_cell(map, check_x - 1, y_intercept_floor).material_right;
 
-				found_coords[0] = check_x;
-				found_coords[1] = y_intercept;
+				int materials[2];
+				if (quad1 || quad4) {
+					materials[0] = left_cell_material;
+					materials[1] = right_cell_material;
+				} else {
+					materials[0] = right_cell_material;
+					materials[1] = left_cell_material;
+				}
 
-				*collided_material = out_of_bounds_material;
-			} else if (re_map_get_cell(map, check_x, (int32_t) y_intercept).material_left != transparent_material) { // Check if left is wall
-				found_vert_wall = true;
-				found_coords[0] = check_x;
-				found_coords[1] = y_intercept;
+				if (materials[0] != transparent_material) {
+					*collided_material = materials[0];
+					found_vert_wall = true;
+				} else if (materials[1] != transparent_material) {
+					*collided_material = materials[1];
+					found_vert_wall = true;
+				}
 
-				*collided_material = re_map_get_cell(map, check_x, (int32_t) y_intercept).material_left;
-			} else if (check_x > 0 && re_map_get_cell(map, check_x - 1, (int32_t) y_intercept).material_right != transparent_material) { // Check if right is wall
-				found_vert_wall = true;
-				found_coords[0] = check_x;
-				found_coords[1] = y_intercept;
-
-				*collided_material = re_map_get_cell(map, check_x - 1, (int32_t) y_intercept).material_right;
-			} else { // Step
-				check_x += tile_step_x;
-				y_intercept += step_y;
+				if (found_vert_wall) {
+					collision_coords[0] = check_x;
+					collision_coords[1] = y_intercept;
+				} else { // Step
+					check_x += tile_step_x;
+					y_intercept += step_y;
+				}
 			}
 		}
 	}
 
-	double check_distance = distance_of_points(origin_x, origin_y, found_coords[0], found_coords[1]);
-	double forward_distance = check_distance * cos(rel_angle);
-
-#if UNUSED == 1
-	enum REOrientation wall_orientation = (found_horiz_wall ? RE_HORIZONTAL : RE_VERTICAL);
-#endif
-
-	// return new Ray(forward_distance, collided_material, texture_unit_phase, intercept_number, wall_orientation);
+	double travel_distance = distance_of_points(origin_x, origin_y, collision_coords[0], collision_coords[1]);
+	double forward_distance = travel_distance * cos(rel_angle);
 
 	return forward_distance;
 }
