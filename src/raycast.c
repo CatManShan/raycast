@@ -26,13 +26,20 @@ enum Material {
 	YELLOW_WALL = SCG_COLOR_YELLOW
 };
 
-struct Control {
-	volatile char value;
-};
-
 struct Options {
 	uint16_t width;
 	uint16_t height;
+};
+
+struct Player {
+	double pos_x;
+	double pos_y;
+	double rotation;
+};
+
+struct CrossThreadData {
+	volatile struct Player *p_player;
+	volatile bool quit;
 };
 
 static struct Options parse_options(int argc, char **argv);
@@ -43,7 +50,7 @@ static double coords_to_angle(double x, double y);
 static double reduce_angle(double angle);
 static int32_t min_int32(int32_t a, int32_t b); 
 
-void *input_loop_func(void *vp_control);
+void *input_loop_func(void *vp_data);
 
 int main(int argc, char **argv)
 {
@@ -64,58 +71,15 @@ int main(int argc, char **argv)
 	scg_pixel_buffer_make_space(pixel_buffer);
 	scg_input_adjust();
 
-	struct Player {
-		double pos_x;
-		double pos_y;
-		double rotation;
-	} player = { 8, 8, PI / 2 };
+	volatile struct Player player = { 8, 8, PI / 2 };
 
-	struct Control control;
+	struct CrossThreadData data = { .p_player = &player, .quit = false };
 	pthread_t input_thread;
-	pthread_create(&input_thread, NULL, input_loop_func, &control);
+	pthread_create(&input_thread, NULL, input_loop_func, &data);
 
-	bool quit = false;
-	while (!quit) {
+	while (!data.quit) {
 		draw_frame(map, pixel_buffer, player.pos_x, player.pos_y, player.rotation);
 		usleep(1000000 / 60);
-
-		const double PLAYER_SPEED = 0.25;
-		const double PLAYER_TURN_SPEED = PI / 64;
-		double move_x, move_y;
-		switch (control.value) {
-		case CTRL_C:
-			quit = true;
-			break;
-		case 'w':
-			angle_to_vector(player.rotation, PLAYER_SPEED, &move_x, &move_y);
-			player.pos_x += move_x;
-			player.pos_y += move_y;
-			break;
-		case 's':
-			angle_to_vector(player.rotation + PI, PLAYER_SPEED, &move_x, &move_y);
-			player.pos_x += move_x;
-			player.pos_y += move_y;
-			break;
-		case 'a':
-			angle_to_vector(player.rotation + PI / 2, PLAYER_SPEED, &move_x, &move_y);
-			player.pos_x += move_x;
-			player.pos_y += move_y;
-			break;
-		case 'd':
-			angle_to_vector(player.rotation - PI / 2, PLAYER_SPEED, &move_x, &move_y);
-			player.pos_x += move_x;
-			player.pos_y += move_y;
-			break;
-		case 'j':
-			player.rotation += PLAYER_TURN_SPEED;
-			break;
-		case 'l':
-			player.rotation -= PLAYER_TURN_SPEED;
-			break;
-		default:
-			break;
-		}
-		control.value = '\0';
 	}
 
 	scg_pixel_buffer_remove_space(pixel_buffer);
@@ -291,12 +255,49 @@ static int32_t min_int32(int32_t a, int32_t b)
 	return (a < b) ? a : b;
 }
 
-void *input_loop_func(void *vp_control)
+void *input_loop_func(void *vp_data)
 {
-	struct Control *p_control = (struct Control *) vp_control;
+	struct CrossThreadData *p_data = (struct CrossThreadData *) vp_data;
+	volatile struct Player *p_player = p_data->p_player;
 
-	while (p_control->value != CTRL_C) {
-		p_control->value = getchar();
+	while (!p_data->quit) {
+		const double PLAYER_SPEED = 0.25;
+		const double PLAYER_TURN_SPEED = PI / 64;
+
+		double move_x, move_y;
+		switch (getchar()) {
+		case CTRL_C:
+			p_data->quit = true;
+			break;
+		case 'w':
+			angle_to_vector(p_player->rotation, PLAYER_SPEED, &move_x, &move_y);
+			p_player->pos_x += move_x;
+			p_player->pos_y += move_y;
+			break;
+		case 's':
+			angle_to_vector(p_player->rotation + PI, PLAYER_SPEED, &move_x, &move_y);
+			p_player->pos_x += move_x;
+			p_player->pos_y += move_y;
+			break;
+		case 'a':
+			angle_to_vector(p_player->rotation + PI / 2, PLAYER_SPEED, &move_x, &move_y);
+			p_player->pos_x += move_x;
+			p_player->pos_y += move_y;
+			break;
+		case 'd':
+			angle_to_vector(p_player->rotation - PI / 2, PLAYER_SPEED, &move_x, &move_y);
+			p_player->pos_x += move_x;
+			p_player->pos_y += move_y;
+			break;
+		case 'j':
+			p_player->rotation += PLAYER_TURN_SPEED;
+			break;
+		case 'l':
+			p_player->rotation -= PLAYER_TURN_SPEED;
+			break;
+		default:
+			break;
+		}
 	}
 
 	return NULL;
