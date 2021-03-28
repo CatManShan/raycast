@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <math.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -261,31 +262,33 @@ void *input_loop_func(void *vp_data)
 	volatile struct Player *p_player = p_data->p_player;
 
 	while (!p_data->quit) {
-		const double PLAYER_SPEED = 0.25;
-		const double PLAYER_TURN_SPEED = PI / 64;
+		const double PLAYER_BASE_SPEED = 0.125;
+		const double PLAYER_TURN_SPEED = PI / 32;
 
 		double move_x, move_y;
-		switch (getchar()) {
+
+		char input = getchar();
+		double speed = islower(input) ? PLAYER_BASE_SPEED : PLAYER_BASE_SPEED * 2;
+		switch (tolower(input)) {
 		case CTRL_C:
 			p_data->quit = true;
 			break;
 		case 'w':
-			angle_to_vector(p_player->rotation, PLAYER_SPEED, &move_x, &move_y);
-			p_player->pos_x += move_x;
+			angle_to_vector(p_player->rotation, speed, &move_x, &move_y); p_player->pos_x += move_x;
 			p_player->pos_y += move_y;
 			break;
 		case 's':
-			angle_to_vector(p_player->rotation + PI, PLAYER_SPEED, &move_x, &move_y);
+			angle_to_vector(p_player->rotation + PI, speed, &move_x, &move_y);
 			p_player->pos_x += move_x;
 			p_player->pos_y += move_y;
 			break;
 		case 'a':
-			angle_to_vector(p_player->rotation + PI / 2, PLAYER_SPEED, &move_x, &move_y);
+			angle_to_vector(p_player->rotation + PI / 2, speed, &move_x, &move_y);
 			p_player->pos_x += move_x;
 			p_player->pos_y += move_y;
 			break;
 		case 'd':
-			angle_to_vector(p_player->rotation - PI / 2, PLAYER_SPEED, &move_x, &move_y);
+			angle_to_vector(p_player->rotation - PI / 2, speed, &move_x, &move_y);
 			p_player->pos_x += move_x;
 			p_player->pos_y += move_y;
 			break;
