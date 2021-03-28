@@ -11,7 +11,7 @@
 
 #include "raycast-engine.h"
 
-#define THRESHOLD 0x0.001p0
+#define THRESHOLD 0x0.0001p0
 #define PI 3.14159265358979323846
 
 static double reduce_angle(double angle);
