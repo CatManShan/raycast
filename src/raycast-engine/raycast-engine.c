@@ -53,6 +53,12 @@ void re_map_fill(struct REMap *map, struct REMapCell cell)
 	}
 }
 
+/* NOTE: only works for angles >=  0 and < 2PI */
+static uint8_t get_angle_quadrant(double reduced_angle)
+{
+	return (uint8_t) (reduced_angle / (PI / 2) + 1);
+}
+
 double re_raycast(struct REMap *map, double origin_x, double origin_y, double forward_angle, double rel_angle,
 		int transparent_material, int out_of_bounds_material, int *collided_material)
 {
@@ -62,10 +68,7 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 	double origin_y_frac = origin_y - origin_y_whole;
 	double absolute_angle = reduce_angle(forward_angle + rel_angle);
 
-	bool quad1 = absolute_angle >= 0 && absolute_angle < PI / 2;
-	bool quad2 = absolute_angle >= PI / 2 && absolute_angle < PI;
-	bool quad3 = absolute_angle >= PI && absolute_angle < PI * 3 / 2;
-	bool quad4 = absolute_angle >= PI * 3 / 2 && absolute_angle < PI * 2;
+	uint8_t quadrant = get_angle_quadrant(absolute_angle);
 
 	double x_intercept = origin_x + (1 - origin_y_frac) / tan(absolute_angle);
 	double y_intercept = origin_y + (1 - origin_x_frac) * tan(absolute_angle);
@@ -79,7 +82,7 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 	int32_t tile_step_x = 1;
 	int32_t tile_step_y = 1;
 
-	if (quad2 || quad3)
+	if (quadrant == 2 || quadrant == 3)
 	{
 		tile_step_x = -1;
 		step_y *= -1;
@@ -87,7 +90,7 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 		check_x += tile_step_x;
 		y_intercept += step_y;
 	}
-	if (quad3 || quad4)
+	if (quadrant == 3 || quadrant == 4)
 	{
 		tile_step_y = -1;
 		step_x *= -1;
@@ -120,7 +123,7 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 				int bottom_cell_material = re_map_get_cell(map, x_intercept_floor, check_y - 1).material_top;
 
 				int materials[2];
-				if (quad1 || quad2) {
+				if (quadrant == 1 || quadrant == 2) {
 					materials[0] = bottom_cell_material;
 					materials[1] = top_cell_material;
 				} else {
@@ -162,7 +165,7 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 				int left_cell_material  = re_map_get_cell(map, check_x - 1, y_intercept_floor).material_right;
 
 				int materials[2];
-				if (quad1 || quad4) {
+				if (quadrant == 1 || quadrant == 4) {
 					materials[0] = left_cell_material;
 					materials[1] = right_cell_material;
 				} else {
