@@ -166,7 +166,7 @@ static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double
 		double rel_angle = -vector_to_angle(1, line_center_offset / (scaler_dimension));
 
 		enum Material collided_material;
-		double forward_distance = re_raycast(map, origin_x, origin_y, forward_angle, rel_angle, FLOOR, OUT_OF_BOUNDS, &collided_material);
+		double forward_distance = re_cast_ray(map, origin_x, origin_y, forward_angle, rel_angle, FLOOR, OUT_OF_BOUNDS, &collided_material);
 
 		double length = scaler_dimension / forward_distance;
 

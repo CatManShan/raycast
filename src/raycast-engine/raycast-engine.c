@@ -59,7 +59,7 @@ static uint8_t get_angle_quadrant(double reduced_angle)
 	return (uint8_t) (reduced_angle / (PI / 2) + 1);
 }
 
-double re_raycast(struct REMap *map, double origin_x, double origin_y, double forward_angle, double rel_angle,
+double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double forward_angle, double rel_angle,
 		int transparent_material, int out_of_bounds_material, int *collided_material)
 {
 	int32_t origin_x_whole = (int32_t) origin_x;

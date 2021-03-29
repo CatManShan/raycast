@@ -25,7 +25,7 @@ struct REMapCell re_map_get_cell(struct REMap *map, uint32_t x, uint32_t y);
 void re_map_set_cell(struct REMap *map, uint32_t x, uint32_t y, struct REMapCell cell);
 void re_map_fill(struct REMap *map, struct REMapCell cell);
 
-double re_raycast(struct REMap *map, double origin_x, double origin_y, double forward_angle, double rel_angle,
+double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double forward_angle, double rel_angle,
 		int transparent_material, int out_of_bounds_material, int *collided_material);
 
 bool re_map_coords_in_bounds(struct REMap *map, int64_t x, int64_t y);
