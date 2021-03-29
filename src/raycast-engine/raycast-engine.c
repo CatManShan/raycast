@@ -104,18 +104,12 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 
 	double collision_coords[2] = {0, 0};
 	bool out_of_bounds = false;
-
-	*collided_material = out_of_bounds_material;
-
 	while (!found_horiz_wall && !found_vert_wall && !out_of_bounds) {
 		while (!found_horiz_wall && double_less_than_or_equal(tile_step_x * x_intercept, tile_step_x * check_x)) {
 			int32_t x_intercept_floor = (int32_t) x_intercept;
 			if (!re_map_coords_in_bounds(map, x_intercept_floor, check_y) || !re_map_coords_in_bounds(map, x_intercept_floor, check_y - 1)) {
 				found_horiz_wall = true;
 				out_of_bounds = true;
-
-				collision_coords[0] = x_intercept;
-				collision_coords[1] = check_y;
 
 				*collided_material = out_of_bounds_material;
 			} else {
@@ -155,9 +149,6 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 			if (!re_map_coords_in_bounds(map, check_x, y_intercept_floor) || !re_map_coords_in_bounds(map, check_x - 1, y_intercept_floor)) { // Check if left or right out-of-bounds
 				found_vert_wall = true;
 				out_of_bounds = true;
-
-				collision_coords[0] = check_x;
-				collision_coords[1] = y_intercept;
 
 				*collided_material = out_of_bounds_material;
 			} else {
