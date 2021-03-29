@@ -44,10 +44,10 @@ struct CrossThreadData {
 };
 
 static struct Options parse_options(int argc, char **argv);
-static void map_init(struct REMap *map);
+static void init_map(struct REMap *map);
 static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double origin_x, double origin_y, double forward_angle);
 static void angle_to_vector(double angle, double length, double *vec_x, double *vec_y);
-static double coords_to_angle(double x, double y);
+static double vector_to_angle(double x, double y);
 static double reduce_angle(double angle);
 static int32_t min_int32(int32_t a, int32_t b); 
 
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 	struct Options options = parse_options(argc - 1, &argv[1]);
 
 	struct REMap *map = re_map_create(32, 24);
-	map_init(map);
+	init_map(map);
 	// map_print(map);
 	printf("\n");
 
@@ -127,7 +127,7 @@ static struct Options parse_options(int argc, char **argv)
 	return options;
 }
 
-static void map_init(struct REMap *map)
+static void init_map(struct REMap *map)
 {
 	re_map_fill(map, RE_MAP_CELL_SOLID(FLOOR));
 
@@ -163,7 +163,7 @@ static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double
 	for (int32_t line = 0; line < screen_width; line++)
 	{
 		double line_center_offset = (int32_t) line - (int32_t) screen_width / 2;
-		double rel_angle = -coords_to_angle(1, line_center_offset / (scaler_dimension));
+		double rel_angle = -vector_to_angle(1, line_center_offset / (scaler_dimension));
 
 		enum Material collided_material;
 		double forward_distance = re_raycast(map, origin_x, origin_y, forward_angle, rel_angle, FLOOR, OUT_OF_BOUNDS, &collided_material);
@@ -198,38 +198,38 @@ static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double
 	scg_pixel_buffer_print(pixel_buffer);
 }
 
-static void angle_to_vector(double angle, double length, double *vec_x, double *vec_y)
+static void angle_to_vector(double angle, double length, double *vx, double *vy)
 {
 	angle = reduce_angle(angle);
 	
 	if (length == 0)
 	{
-		*vec_x = 0;
-		*vec_y = 0;
+		*vx = 0;
+		*vy = 0;
 
 		return;
 	}
 	
 	double slope = tan(angle);
 	
-	*vec_x = 1;
-	*vec_y = slope;
+	*vx = 1;
+	*vy = slope;
 	
-	double scale = sqrt(*vec_x * *vec_x + *vec_y * *vec_y);
+	double scale = sqrt(*vx * *vx + *vy * *vy);
 	
-	*vec_x *= length / scale;
-	*vec_y *= length / scale;
+	*vx *= length / scale;
+	*vy *= length / scale;
 	
 	if (angle > PI / 2 && angle <= 3 * PI / 2)
 	{
-		*vec_x *= -1;
-		*vec_y *= -1;
+		*vx *= -1;
+		*vy *= -1;
 	}
 }
 
-static double coords_to_angle(double x, double y)
+static double vector_to_angle(double vx, double yx)
 {
-	return atan2(y, x);
+	return atan2(yx, vx);
 }
 
 static double reduce_angle(double angle)
