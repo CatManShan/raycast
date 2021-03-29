@@ -103,82 +103,77 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 	bool found_vert_wall = false;
 
 	double collision_coords[2] = {0, 0};
-	bool out_of_bounds = false;
-	while (!found_horiz_wall && !found_vert_wall && !out_of_bounds) {
+	while (!found_horiz_wall && !found_vert_wall) {
 		while (!found_horiz_wall && double_less_than_or_equal(tile_step_x * x_intercept, tile_step_x * check_x)) {
 			int32_t x_intercept_floor = (int32_t) x_intercept;
-			if (!re_map_coords_in_bounds(map, x_intercept_floor, check_y) || !re_map_coords_in_bounds(map, x_intercept_floor, check_y - 1)) {
-				found_horiz_wall = true;
-				out_of_bounds = true;
 
-				*collided_material = out_of_bounds_material;
+			int top_cell_material    = re_map_coords_in_bounds(map, x_intercept_floor, check_y)
+				? re_map_get_cell(map, x_intercept_floor, check_y).material_bottom
+				: out_of_bounds_material;
+
+			int bottom_cell_material = re_map_coords_in_bounds(map, x_intercept_floor, check_y - 1)
+				? re_map_get_cell(map, x_intercept_floor, check_y - 1).material_top
+				: out_of_bounds_material;
+
+			int materials[2];
+			if (quadrant == 1 || quadrant == 2) {
+				materials[0] = bottom_cell_material;
+				materials[1] = top_cell_material;
 			} else {
-				int top_cell_material    = re_map_get_cell(map, x_intercept_floor, check_y).material_bottom;
-				int bottom_cell_material = re_map_get_cell(map, x_intercept_floor, check_y - 1).material_top;
+				materials[0] = top_cell_material;
+				materials[1] = bottom_cell_material;
+			}
 
-				int materials[2];
-				if (quadrant == 1 || quadrant == 2) {
-					materials[0] = bottom_cell_material;
-					materials[1] = top_cell_material;
-				} else {
-					materials[0] = top_cell_material;
-					materials[1] = bottom_cell_material;
-				}
+			if (materials[0] != transparent_material) {
+				*collided_material = materials[0];
+				found_horiz_wall = true;
+			} else if (materials[1] != transparent_material) {
+				*collided_material = materials[1];
+				found_horiz_wall = true;
+			}
 
-				if (materials[0] != transparent_material) {
-					*collided_material = materials[0];
-					found_horiz_wall = true;
-				} else if (materials[1] != transparent_material) {
-					*collided_material = materials[1];
-					found_horiz_wall = true;
-				}
-
-				if (found_horiz_wall) {
-					collision_coords[0] = x_intercept;
-					collision_coords[1] = check_y;
-				} else { // Step
-					check_y += tile_step_y;
-					x_intercept += step_x;
-				}
+			if (found_horiz_wall) {
+				collision_coords[0] = x_intercept;
+				collision_coords[1] = check_y;
+			} else { // Step
+				check_y += tile_step_y;
+				x_intercept += step_x;
 			}
 		}
 
 		while (!found_horiz_wall && !found_vert_wall && double_less_than_or_equal(tile_step_y * y_intercept, tile_step_y * check_y))
 		{
 			int32_t y_intercept_floor = (int32_t) y_intercept;
-			if (!re_map_coords_in_bounds(map, check_x, y_intercept_floor) || !re_map_coords_in_bounds(map, check_x - 1, y_intercept_floor)) { // Check if left or right out-of-bounds
-				found_vert_wall = true;
-				out_of_bounds = true;
+			int right_cell_material = re_map_coords_in_bounds(map, check_x, y_intercept_floor)
+				? re_map_get_cell(map, check_x, y_intercept_floor).material_left
+				: out_of_bounds_material;
+			int left_cell_material  = re_map_coords_in_bounds(map, check_x - 1, y_intercept_floor)
+				? re_map_get_cell(map, check_x - 1, y_intercept_floor).material_right
+				: out_of_bounds_material;
 
-				*collided_material = out_of_bounds_material;
+			int materials[2];
+			if (quadrant == 1 || quadrant == 4) {
+				materials[0] = left_cell_material;
+				materials[1] = right_cell_material;
 			} else {
-				int right_cell_material = re_map_get_cell(map, check_x, y_intercept_floor).material_left;
-				int left_cell_material  = re_map_get_cell(map, check_x - 1, y_intercept_floor).material_right;
+				materials[0] = right_cell_material;
+				materials[1] = left_cell_material;
+			}
 
-				int materials[2];
-				if (quadrant == 1 || quadrant == 4) {
-					materials[0] = left_cell_material;
-					materials[1] = right_cell_material;
-				} else {
-					materials[0] = right_cell_material;
-					materials[1] = left_cell_material;
-				}
+			if (materials[0] != transparent_material) {
+				*collided_material = materials[0];
+				found_vert_wall = true;
+			} else if (materials[1] != transparent_material) {
+				*collided_material = materials[1];
+				found_vert_wall = true;
+			}
 
-				if (materials[0] != transparent_material) {
-					*collided_material = materials[0];
-					found_vert_wall = true;
-				} else if (materials[1] != transparent_material) {
-					*collided_material = materials[1];
-					found_vert_wall = true;
-				}
-
-				if (found_vert_wall) {
-					collision_coords[0] = check_x;
-					collision_coords[1] = y_intercept;
-				} else { // Step
-					check_x += tile_step_x;
-					y_intercept += step_y;
-				}
+			if (found_vert_wall) {
+				collision_coords[0] = check_x;
+				collision_coords[1] = y_intercept;
+			} else { // Step
+				check_x += tile_step_x;
+				y_intercept += step_y;
 			}
 		}
 	}
