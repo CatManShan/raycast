@@ -113,6 +113,8 @@ static struct Options parse_options(int argc, char **argv)
 
 	if (error.error_code != OM_NO_ERROR) {
 		option_map_print_error_message(stderr, "raycast: ", error);
+
+		exit(EXIT_FAILURE);
 	}
 
 	struct Options options = { .width = 64, .height = 48 };
