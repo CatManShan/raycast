@@ -115,20 +115,20 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 				? re_map_get_cell(map, x_intercept_floor, check_y - 1).material_top
 				: out_of_bounds_material;
 
-			int materials[2];
+			int material_close, material_far;
 			if (quadrant == 1 || quadrant == 2) {
-				materials[0] = bottom_cell_material;
-				materials[1] = top_cell_material;
+				material_close = bottom_cell_material;
+				material_far = top_cell_material;
 			} else {
-				materials[0] = top_cell_material;
-				materials[1] = bottom_cell_material;
+				material_close = top_cell_material;
+				material_far = bottom_cell_material;
 			}
 
-			if (materials[0] != transparent_material) {
-				*collided_material = materials[0];
+			if (material_close != transparent_material) {
+				*collided_material = material_close;
 				found_horiz_wall = true;
-			} else if (materials[1] != transparent_material) {
-				*collided_material = materials[1];
+			} else if (material_far != transparent_material) {
+				*collided_material = material_far;
 				found_horiz_wall = true;
 			}
 
@@ -151,20 +151,20 @@ double re_raycast(struct REMap *map, double origin_x, double origin_y, double fo
 				? re_map_get_cell(map, check_x - 1, y_intercept_floor).material_right
 				: out_of_bounds_material;
 
-			int materials[2];
+			int material_close, material_far;
 			if (quadrant == 1 || quadrant == 4) {
-				materials[0] = left_cell_material;
-				materials[1] = right_cell_material;
+				material_close = left_cell_material;
+				material_far = right_cell_material;
 			} else {
-				materials[0] = right_cell_material;
-				materials[1] = left_cell_material;
+				material_close = right_cell_material;
+				material_far = left_cell_material;
 			}
 
-			if (materials[0] != transparent_material) {
-				*collided_material = materials[0];
+			if (material_close != transparent_material) {
+				*collided_material = material_close;
 				found_vert_wall = true;
-			} else if (materials[1] != transparent_material) {
-				*collided_material = materials[1];
+			} else if (material_far != transparent_material) {
+				*collided_material = material_far;
 				found_vert_wall = true;
 			}
 
