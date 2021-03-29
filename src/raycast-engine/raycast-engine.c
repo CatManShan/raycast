@@ -17,7 +17,7 @@
 static double reduce_angle(double angle);
 static double distance_of_points(double x1, double y1, double x2, double y2);
 static bool double_less_than_or_equal(double a, double b);
-static bool double_equal_within_threshold(double a, double b, double threshold);
+static bool double_equal(double a, double b);
 
 struct REMap *re_map_create(uint32_t width, uint32_t height)
 {
@@ -218,12 +218,12 @@ static double distance_of_points(double x1, double y1, double x2, double y2)
 
 static bool double_less_than_or_equal(double a, double b)
 {
-	return a <= b || double_equal_within_threshold(a, b, THRESHOLD);
+	return a <= b || double_equal(a, b);
 }
 
-static bool double_equal_within_threshold(double a, double b, double threshold)
+static bool double_equal(double a, double b)
 {
-	return fabs(a - b) < threshold;
+	return fabs(a - b) < THRESHOLD;
 }
 
 
