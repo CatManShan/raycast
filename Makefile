@@ -15,8 +15,8 @@ OBJS = obj/raycast.o \
        obj/option-map.o \
        $(DEBUG_OBJS)
 
-DEBUG = -DNDEBUG -D_DEFAULT_SOURCE
-DEFINES = $(DEBUG)
+DEBUG = -DNDEBUG
+DEFINES = $(DEBUG) -D_DEFAULT_SOURCE
 
 all: make-dirs bin/raycast
 
