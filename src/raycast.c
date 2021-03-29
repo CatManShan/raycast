@@ -9,7 +9,7 @@
 #include "mem-utils/mem-macros.h"
 #include "option-map/option-map.h"
 #include "raycast-engine/raycast-engine.h"
-#include "simpcg/simpcg.h"
+#include "simptg/simptg.h"
 
 #ifdef MEM_DEBUG
 #include "mem-utils/mem-debug.h"
@@ -68,9 +68,9 @@ int main(int argc, char **argv)
 	// map_print(map);
 	printf("\n");
 
-	struct SCGBuffer *pixel_buffer = scg_pixel_buffer_create(options.width, options.height);
-	scg_pixel_buffer_make_space(pixel_buffer);
-	scg_input_adjust();
+	struct SCGBuffer *pixel_buffer = stg_pixel_buffer_create(options.width, options.height);
+	stg_pixel_buffer_make_space(pixel_buffer);
+	stg_input_adjust();
 
 	volatile struct Player player = { 8, 8, PI / 2 };
 
@@ -83,9 +83,9 @@ int main(int argc, char **argv)
 		usleep(1000000 / 60);
 	}
 
-	scg_pixel_buffer_remove_space(pixel_buffer);
-	scg_pixel_buffer_destroy(pixel_buffer);
-	scg_input_restore();
+	stg_pixel_buffer_remove_space(pixel_buffer);
+	stg_pixel_buffer_destroy(pixel_buffer);
+	stg_input_restore();
 
 	re_map_destroy(map);
 
@@ -152,7 +152,7 @@ static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double
 
 	for (int32_t row = 0; row < screen_height; row++) {
 		for (int32_t col = 0; col < screen_width; col++) {
-			scg_pixel_buffer_set(pixel_buffer, col, row, FLOOR);
+			stg_pixel_buffer_set(pixel_buffer, col, row, FLOOR);
 		}
 	}
 
@@ -192,12 +192,12 @@ static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double
 
 		enum Material material = materials[line];
 		for (int32_t row = start; row < end; row++) {
-			scg_pixel_buffer_set(pixel_buffer, line, row, material);
+			stg_pixel_buffer_set(pixel_buffer, line, row, material);
 		}
 	}
 
 	// Print
-	scg_pixel_buffer_print(pixel_buffer);
+	stg_pixel_buffer_print(pixel_buffer);
 }
 
 static void angle_to_vector(double angle, double length, double *vx, double *vy)

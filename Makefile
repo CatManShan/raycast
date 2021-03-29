@@ -3,15 +3,15 @@ OPTIMIZATION = -O3
 CFLAGS = -Wall -Wextra -Wpedantic -std=c99 $(OPTIMIZATION)
 LIBS   = -pthread -lm
 
-DEPS = src/simpcg/simpcg.h \
+DEPS = src/simptg/simptg.h \
        src/raycast-engine/raycast-engine.h \
        src/option-map/option-map.h \
        $(DEBUG_DEPS)
 
 OBJS = obj/raycast.o \
        obj/raycast-engine.o \
-       obj/scg-buffer.o \
-       obj/scg-pixel-buffer.o \
+       obj/stg-buffer.o \
+       obj/stg-pixel-buffer.o \
        obj/option-map.o \
        $(DEBUG_OBJS)
 
@@ -44,12 +44,12 @@ obj/raycast.o: src/raycast.c $(DEPS)
 obj/raycast-engine.o: src/raycast-engine/raycast-engine.c src/raycast-engine/raycast-engine.h $(DEBUG_DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
 
-# simpcg
+# simptg
 
-obj/scg-buffer.o: src/simpcg/scg-buffer.c src/simpcg/simpcg.h $(DEBUG_DEPS)
+obj/stg-buffer.o: src/simptg/stg-buffer.c src/simptg/simptg.h $(DEBUG_DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
 
-obj/scg-pixel-buffer.o: src/simpcg/scg-pixel-buffer.c src/simpcg/simpcg.h $(DEBUG_DEPS)
+obj/stg-pixel-buffer.o: src/simptg/stg-pixel-buffer.c src/simptg/simptg.h $(DEBUG_DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
 
 # option-map
