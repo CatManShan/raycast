@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "../fixed/fixed.h"
 #include "../mem-utils/mem-macros.h"
 
 #ifdef MEM_DEBUG
@@ -13,6 +14,8 @@
 
 #define THRESHOLD 0x0.0001p0
 #define PI 3.14159265358979323846
+
+typedef struct Fixed64 fixed64_t;
 
 static double reduce_angle(double angle);
 static double distance_of_points(double x1, double y1, double x2, double y2);
@@ -70,14 +73,14 @@ double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double f
 
 	uint8_t quadrant = get_angle_quadrant(absolute_angle);
 
-	double intercept_x = origin_x + (1 - origin_y_frac) / tan(absolute_angle);
-	double intercept_y = origin_y + (1 - origin_x_frac) * tan(absolute_angle);
+	fixed64_t intercept_x = fixed64_from_double(origin_x + (1 - origin_y_frac) / tan(absolute_angle));
+	fixed64_t intercept_y = fixed64_from_double(origin_y + (1 - origin_x_frac) * tan(absolute_angle));
 
 	int32_t tile_x = origin_x_whole + 1;
 	int32_t tile_y = origin_y_whole + 1;
 
-	double step_x = 1 / tan(absolute_angle);
-	double step_y = tan(absolute_angle);
+	fixed64_t step_x = fixed64_from_double(1 / tan(absolute_angle));
+	fixed64_t step_y = fixed64_from_double(tan(absolute_angle));
 
 	int32_t tile_step_x = 1;
 	int32_t tile_step_y = 1;
@@ -85,18 +88,18 @@ double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double f
 	if (quadrant == 2 || quadrant == 3)
 	{
 		tile_step_x = -1;
-		step_y *= -1;
+		step_y.as_int *= -1;
 
 		tile_x += tile_step_x;
-		intercept_y += step_y;
+		intercept_y = fixed64_add(intercept_y, step_y);
 	}
 	if (quadrant == 3 || quadrant == 4)
 	{
 		tile_step_y = -1;
-		step_x *= -1;
+		step_x.as_int *= -1;
 
 		tile_y += tile_step_y;
-		intercept_x += step_x;
+		intercept_x = fixed64_add(intercept_x, step_x);
 	}
 
 	bool found_horiz_wall = false;
@@ -104,8 +107,8 @@ double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double f
 
 	double collision_coords[2] = {0, 0};
 	while (!found_horiz_wall && !found_vert_wall) {
-		while (!found_horiz_wall && double_less_than_or_equal(tile_step_x * intercept_x, tile_step_x * tile_x)) {
-			int32_t intercept_x_floor = (int32_t) intercept_x;
+		if ((tile_step_x * intercept_x.as_int <= tile_step_x * ((int64_t) tile_x << 32)) && (intercept_x.as_int != (1L << 63))) {
+			int32_t intercept_x_floor = intercept_x.as_int >> 32;
 
 			int top_cell_material    = re_map_coords_in_bounds(map, intercept_x_floor, tile_y)
 				? re_map_get_cell(map, intercept_x_floor, tile_y).material_bottom
@@ -133,17 +136,14 @@ double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double f
 			}
 
 			if (found_horiz_wall) {
-				collision_coords[0] = intercept_x;
+				collision_coords[0] = fixed64_to_double(intercept_x);
 				collision_coords[1] = tile_y;
 			} else { // Step
 				tile_y += tile_step_y;
-				intercept_x += step_x;
+				intercept_x = fixed64_add(intercept_x, step_x);
 			}
-		}
-
-		while (!found_horiz_wall && !found_vert_wall && double_less_than_or_equal(tile_step_y * intercept_y, tile_step_y * tile_y))
-		{
-			int32_t intercept_y_floor = (int32_t) intercept_y;
+		} else {
+			int32_t intercept_y_floor = intercept_y.as_int >> 32;
 			int right_cell_material = re_map_coords_in_bounds(map, tile_x, intercept_y_floor)
 				? re_map_get_cell(map, tile_x, intercept_y_floor).material_left
 				: out_of_bounds_material;
@@ -170,10 +170,10 @@ double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double f
 
 			if (found_vert_wall) {
 				collision_coords[0] = tile_x;
-				collision_coords[1] = intercept_y;
+				collision_coords[1] = fixed64_to_double(intercept_y);
 			} else { // Step
 				tile_x += tile_step_x;
-				intercept_y += step_y;
+				intercept_y = fixed64_add(intercept_y, step_y);
 			}
 		}
 	}

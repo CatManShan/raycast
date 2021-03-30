@@ -6,6 +6,7 @@ LIBS   = -pthread -lm
 DEPS = src/simptg/simptg.h \
        src/raycast-engine/raycast-engine.h \
        src/option-map/option-map.h \
+       src/fixed/fixed.h \
        $(DEBUG_DEPS)
 
 OBJS = obj/raycast.o \
@@ -13,6 +14,7 @@ OBJS = obj/raycast.o \
        obj/stg-buffer.o \
        obj/stg-pixel-buffer.o \
        obj/option-map.o \
+       obj/fixed.o \
        $(DEBUG_OBJS)
 
 DEBUG = -DNDEBUG
@@ -57,6 +59,11 @@ obj/stg-pixel-buffer.o: src/simptg/stg-pixel-buffer.c src/simptg/simptg.h $(DEBU
 obj/option-map.o: src/option-map/option-map.c src/option-map/option-map.h $(DEBUG_DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
 
+# fixed
+
+obj/fixed.o: src/fixed/fixed.c src/fixed/fixed.h $(DEBUG_DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
+
 # mem-debug
 
 obj/mem-debug.o: src/mem-utils/mem-debug.c src/mem-utils/mem-debug.h
@@ -67,5 +74,5 @@ obj/mem-debug.o: src/mem-utils/mem-debug.c src/mem-utils/mem-debug.h
 clean:
 	rm -rf obj/*
 
-.PHONY: release debug make-dirs clean
+.PHONY: all debug make-dirs clean
 
