@@ -1,4 +1,4 @@
-#include "simptg.h" // Interface
+#include "simptg.h"
 
 struct SCGBuffer *stg_pixel_buffer_create(uint16_t width, uint16_t height)
 {

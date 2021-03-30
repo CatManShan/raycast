@@ -125,8 +125,6 @@ void stg_buffer_print(struct SCGBuffer *buffer)
 	fflush(stdout);
 }
 
-// Static Functions
-
 static void stg_print_cell(struct SCGCell cell)
 {
 	uint16_t ansi_fg_code = stg_color_code_to_ansi_fg(cell.fg_color);
