@@ -186,8 +186,8 @@ static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double
 		if (start < 0) {
 			start = 0;
 		}
-		if (end >= screen_height) {
-			end = screen_height - 1;
+		if (end > screen_height) {
+			end = screen_height;
 		}
 
 		enum Material material = materials[line];
