@@ -70,11 +70,11 @@ double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double f
 
 	uint8_t quadrant = get_angle_quadrant(absolute_angle);
 
-	double x_intercept = origin_x + (1 - origin_y_frac) / tan(absolute_angle);
-	double y_intercept = origin_y + (1 - origin_x_frac) * tan(absolute_angle);
+	double intercept_x = origin_x + (1 - origin_y_frac) / tan(absolute_angle);
+	double intercept_y = origin_y + (1 - origin_x_frac) * tan(absolute_angle);
 
-	int32_t check_x = origin_x_whole + 1;
-	int32_t check_y = origin_y_whole + 1;
+	int32_t tile_x = origin_x_whole + 1;
+	int32_t tile_y = origin_y_whole + 1;
 
 	double step_x = 1 / tan(absolute_angle);
 	double step_y = tan(absolute_angle);
@@ -87,16 +87,16 @@ double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double f
 		tile_step_x = -1;
 		step_y *= -1;
 
-		check_x += tile_step_x;
-		y_intercept += step_y;
+		tile_x += tile_step_x;
+		intercept_y += step_y;
 	}
 	if (quadrant == 3 || quadrant == 4)
 	{
 		tile_step_y = -1;
 		step_x *= -1;
 
-		check_y += tile_step_y;
-		x_intercept += step_x;
+		tile_y += tile_step_y;
+		intercept_x += step_x;
 	}
 
 	bool found_horiz_wall = false;
@@ -104,15 +104,15 @@ double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double f
 
 	double collision_coords[2] = {0, 0};
 	while (!found_horiz_wall && !found_vert_wall) {
-		while (!found_horiz_wall && double_less_than_or_equal(tile_step_x * x_intercept, tile_step_x * check_x)) {
-			int32_t x_intercept_floor = (int32_t) x_intercept;
+		while (!found_horiz_wall && double_less_than_or_equal(tile_step_x * intercept_x, tile_step_x * tile_x)) {
+			int32_t intercept_x_floor = (int32_t) intercept_x;
 
-			int top_cell_material    = re_map_coords_in_bounds(map, x_intercept_floor, check_y)
-				? re_map_get_cell(map, x_intercept_floor, check_y).material_bottom
+			int top_cell_material    = re_map_coords_in_bounds(map, intercept_x_floor, tile_y)
+				? re_map_get_cell(map, intercept_x_floor, tile_y).material_bottom
 				: out_of_bounds_material;
 
-			int bottom_cell_material = re_map_coords_in_bounds(map, x_intercept_floor, check_y - 1)
-				? re_map_get_cell(map, x_intercept_floor, check_y - 1).material_top
+			int bottom_cell_material = re_map_coords_in_bounds(map, intercept_x_floor, tile_y - 1)
+				? re_map_get_cell(map, intercept_x_floor, tile_y - 1).material_top
 				: out_of_bounds_material;
 
 			int material_close, material_far;
@@ -133,22 +133,22 @@ double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double f
 			}
 
 			if (found_horiz_wall) {
-				collision_coords[0] = x_intercept;
-				collision_coords[1] = check_y;
+				collision_coords[0] = intercept_x;
+				collision_coords[1] = tile_y;
 			} else { // Step
-				check_y += tile_step_y;
-				x_intercept += step_x;
+				tile_y += tile_step_y;
+				intercept_x += step_x;
 			}
 		}
 
-		while (!found_horiz_wall && !found_vert_wall && double_less_than_or_equal(tile_step_y * y_intercept, tile_step_y * check_y))
+		while (!found_horiz_wall && !found_vert_wall && double_less_than_or_equal(tile_step_y * intercept_y, tile_step_y * tile_y))
 		{
-			int32_t y_intercept_floor = (int32_t) y_intercept;
-			int right_cell_material = re_map_coords_in_bounds(map, check_x, y_intercept_floor)
-				? re_map_get_cell(map, check_x, y_intercept_floor).material_left
+			int32_t intercept_y_floor = (int32_t) intercept_y;
+			int right_cell_material = re_map_coords_in_bounds(map, tile_x, intercept_y_floor)
+				? re_map_get_cell(map, tile_x, intercept_y_floor).material_left
 				: out_of_bounds_material;
-			int left_cell_material  = re_map_coords_in_bounds(map, check_x - 1, y_intercept_floor)
-				? re_map_get_cell(map, check_x - 1, y_intercept_floor).material_right
+			int left_cell_material  = re_map_coords_in_bounds(map, tile_x - 1, intercept_y_floor)
+				? re_map_get_cell(map, tile_x - 1, intercept_y_floor).material_right
 				: out_of_bounds_material;
 
 			int material_close, material_far;
@@ -169,11 +169,11 @@ double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double f
 			}
 
 			if (found_vert_wall) {
-				collision_coords[0] = check_x;
-				collision_coords[1] = y_intercept;
+				collision_coords[0] = tile_x;
+				collision_coords[1] = intercept_y;
 			} else { // Step
-				check_x += tile_step_x;
-				y_intercept += step_y;
+				tile_x += tile_step_x;
+				intercept_y += step_y;
 			}
 		}
 	}
