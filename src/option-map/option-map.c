@@ -15,9 +15,6 @@ static struct OptionMapOption *option_map_get_option_by_alias(struct OptionMap *
 static struct OptionMapOption *option_map_get_option_by_name(struct OptionMap *option_map, const char *option_name);
 
 static char *str_dup(const char *str);
-#ifdef UNUSED
-static char *str_n_dup(const char *str, size_t length);
-#endif // UNUSED
 
 static size_t str_arr_len(char **str_arr);
 static char **str_arr_dup(char **str_arr);
@@ -150,28 +147,6 @@ static char *str_dup(const char *str)
 
 	return str_copy;
 }
-
-#ifdef UNUSED
-static char *str_n_dup(const char *str, size_t length)
-{
-	if (str == NULL) {
-		return NULL;
-	}
-
-	size_t str_length = strlen(str);
-	size_t size = (length < str_length) ? length + 1 : str_length + 1;
-	
-	char *str_copy = ALLOC_STR_SIZE(size);
-
-	if (str_copy == NULL) {
-		return NULL;
-	}
-
-	strncpy(str_copy, str, length);
-
-	return str_copy;
-}
-#endif // UNUSED
 
 static size_t str_arr_len(char **str_arr)
 {
