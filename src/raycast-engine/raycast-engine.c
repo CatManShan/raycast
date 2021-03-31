@@ -12,15 +12,12 @@
 
 #include "raycast-engine.h"
 
-#define THRESHOLD 0x0.0001p0
 #define PI 3.14159265358979323846
 
 typedef struct Fixed64 fixed64_t;
 
 static double reduce_angle(double angle);
 static double distance_of_points(double x1, double y1, double x2, double y2);
-static bool double_less_than_or_equal(double a, double b);
-static bool double_equal(double a, double b);
 
 struct REMap *re_map_create(uint32_t width, uint32_t height)
 {
@@ -215,15 +212,4 @@ static double distance_of_points(double x1, double y1, double x2, double y2)
 
 	return sqrt(dx * dx + dy * dy);
 }
-
-static bool double_less_than_or_equal(double a, double b)
-{
-	return a <= b || double_equal(a, b);
-}
-
-static bool double_equal(double a, double b)
-{
-	return fabs(a - b) < THRESHOLD;
-}
-
 
