@@ -141,10 +141,24 @@ struct Fixed64 fixed64_multiply(struct Fixed64 a, struct Fixed64 b)
 
 struct Fixed64 fixed64_divide(struct Fixed64 a, struct Fixed64 b)
 {
-	double a_double = fixed64_to_double(a);
-	double b_double = fixed64_to_double(b);
+	int64_t a_int = a.as_int;
+	int64_t b_int = b.as_int;
 
-	return fixed64_from_double(a_double / b_double);
+	int64_t answer = a_int / b_int;
+	a_int %= b_int;
+
+
+	for (int_fast8_t shift_num = 0; shift_num < 32; shift_num++) {
+		answer <<= 1;
+		a_int <<= 1;
+
+		answer += a_int / b_int;
+		a_int %= b_int;
+	}
+
+	answer += (a_int << 1) / b_int; // round
+
+	return (struct Fixed64) { answer };
 }
 
 struct UFixed64 ufixed64_add(struct UFixed64 a, struct UFixed64 b)
@@ -179,10 +193,24 @@ struct UFixed64 ufixed64_multiply(struct UFixed64 a, struct UFixed64 b)
  
 struct UFixed64 ufixed64_divide(struct UFixed64 a, struct UFixed64 b)
 {
-	double a_double = ufixed64_to_double(a);
-	double b_double = ufixed64_to_double(b);
+	uint64_t a_uint = a.as_uint;
+	uint64_t b_uint = b.as_uint;
 
-	return ufixed64_from_double(a_double / b_double);
+	uint64_t answer = a_uint / b_uint;
+	a_uint %= b_uint;
+
+
+	for (uint_fast8_t shift_num = 0; shift_num < 32; shift_num++) {
+		answer <<= 1;
+		a_uint <<= 1;
+
+		answer += a_uint / b_uint;
+		a_uint %= b_uint;
+	}
+
+	answer += (a_uint << 1) / b_uint; // round
+
+	return (struct UFixed64) { answer };
 }
 
 
