@@ -1,6 +1,7 @@
 #ifndef mem_debug_h
 #define mem_debug_h
 
+#include <stddef.h>
 #include <stdio.h>
 
 #ifdef MEM_DEBUG
