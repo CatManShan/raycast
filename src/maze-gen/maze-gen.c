@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "mem-macros.h"
+#include "../mem-utils/mem-macros.h"
 
 #include "maze-gen.h"
 

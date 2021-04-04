@@ -7,6 +7,7 @@ DEPS = src/simptg/simptg.h \
        src/raycast-engine/raycast-engine.h \
        src/option-map/option-map.h \
        src/fixed/fixed.h \
+       src/maze-gen/maze-gen.h \
        $(DEBUG_DEPS)
 
 OBJS = obj/raycast.o \
@@ -15,6 +16,7 @@ OBJS = obj/raycast.o \
        obj/stg-pixel-buffer.o \
        obj/option-map.o \
        obj/fixed.o \
+       obj/maze-gen.o \
        $(DEBUG_OBJS)
 
 DEBUG = -DNDEBUG
@@ -62,6 +64,11 @@ obj/option-map.o: src/option-map/option-map.c src/option-map/option-map.h $(DEBU
 # fixed
 
 obj/fixed.o: src/fixed/fixed.c src/fixed/fixed.h $(DEBUG_DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
+
+# maze-gen
+
+obj/maze-gen.o: src/maze-gen/maze-gen.c src/maze-gen/maze-gen.h $(DEBUG_DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(DEFINES)
 
 # mem-debug

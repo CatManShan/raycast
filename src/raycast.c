@@ -10,6 +10,7 @@
 #include "option-map/option-map.h"
 #include "raycast-engine/raycast-engine.h"
 #include "simptg/simptg.h"
+#include "maze-gen/maze-gen.h"
 
 #ifdef MEM_DEBUG
 #include "mem-utils/mem-debug.h"
@@ -72,7 +73,7 @@ int main(int argc, char **argv)
 	stg_pixel_buffer_make_space(pixel_buffer);
 	stg_input_adjust();
 
-	volatile struct Player player = { 8, 8, PI / 2 };
+	volatile struct Player player = { 0.5, map->height - 0.5, 0.0625 };
 
 	struct CrossThreadData data = { .p_player = &player, .quit = false };
 	pthread_t input_thread;
@@ -133,16 +134,31 @@ static void init_map(struct REMap *map)
 {
 	re_map_fill(map, RE_MAP_CELL_SOLID(FLOOR));
 
-	struct REMapCell blue_wall_cell = (struct REMapCell) { BLUE_WALL, BRIGHT_BLUE_WALL, BLUE_WALL, BRIGHT_BLUE_WALL };
-	for (size_t x = 4; x < 12; x++) {
-		re_map_set_cell(map, x, 11, blue_wall_cell);
-	}
-	for (size_t y = 9; y < 11; y++) {
-		re_map_set_cell(map, 4, y, blue_wall_cell);
+	struct Maze *maze = maze_create(map->width, map->height);
+	maze_generate(maze);
+
+	for (uint32_t row = 0; row < maze->height; row++) {
+		for (uint32_t col = 0; col < maze->width; col++) {
+			struct REMapCell cell = RE_MAP_CELL_SOLID(FLOOR);
+
+			if (maze_has_wall(maze, col, row, MAZE_WALL_TOP)) {
+				cell.material_top = BRIGHT_BLUE_WALL;
+			}
+			if (maze_has_wall(maze, col, row, MAZE_WALL_RIGHT)) {
+				cell.material_right = BLUE_WALL;
+			}
+			if (maze_has_wall(maze, col, row, MAZE_WALL_BOTTOM)) {
+				cell.material_bottom = BRIGHT_BLUE_WALL;
+			}
+			if (maze_has_wall(maze, col, row, MAZE_WALL_LEFT)) {
+				cell.material_left = BLUE_WALL;
+			}
+
+			re_map_set_cell(map, col, (map->height - 1) - row, cell);
+		}
 	}
 
-	struct REMapCell funky_cell = (struct REMapCell) { RED_WALL, OUT_OF_BOUNDS, FLOOR, YELLOW_WALL };
-	re_map_set_cell(map, 14, 3, funky_cell);
+	maze_destroy(maze);
 }
 
 static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double origin_x, double origin_y, double forward_angle)
