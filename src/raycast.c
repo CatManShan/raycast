@@ -343,7 +343,7 @@ static int32_t move_player(volatile struct Player *p_player, double dx, double d
 
 	// special case when crossing x and y at the same time
 	// (prevents walking through convex corners)
-	if (cell_x != cell_x_new && cell_y != cell_y_new) {
+	if (cell_x != cell_x_new && cell_y != cell_y_new && can_move_x && can_move_y) {
 		struct REMapCell cell_pass_x = re_map_get_cell(map, cell_x_new, cell_y);
 		struct REMapCell cell_pass_y = re_map_get_cell(map, cell_x, cell_y_new);
 		struct REMapCell cell_new = re_map_get_cell(map, cell_x_new, cell_y_new);
