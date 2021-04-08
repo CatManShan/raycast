@@ -62,8 +62,8 @@ static uint8_t get_angle_quadrant(double reduced_angle)
 double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double forward_angle, double rel_angle,
 		int transparent_material, int out_of_bounds_material, int *collided_material)
 {
-	int32_t origin_x_whole = (int32_t) origin_x;
-	int32_t origin_y_whole = (int32_t) origin_y;
+	int32_t origin_x_whole = (int32_t) origin_x; // no floor--should always be positive
+	int32_t origin_y_whole = (int32_t) origin_y; // ^^^
 	double origin_x_frac = origin_x - origin_x_whole;
 	double origin_y_frac = origin_y - origin_y_whole;
 	double absolute_angle = reduce_angle(forward_angle + rel_angle);

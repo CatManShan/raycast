@@ -34,13 +34,14 @@ struct Options {
 };
 
 struct Player {
-	double pos_x;
-	double pos_y;
+	double x;
+	double y;
 	double rotation;
 };
 
 struct CrossThreadData {
 	volatile struct Player *p_player;
+	struct REMap *map;
 	volatile bool quit;
 };
 
@@ -51,6 +52,7 @@ static void angle_to_vector(double angle, double length, double *vec_x, double *
 static double vector_to_angle(double x, double y);
 static double reduce_angle(double angle);
 static int32_t min_int32(int32_t a, int32_t b); 
+static int32_t move_player(volatile struct Player *p_player, double dx, double dy, struct REMap *map);
 
 void *input_loop_func(void *vp_data);
 
@@ -64,9 +66,8 @@ int main(int argc, char **argv)
 	
 	struct Options options = parse_options(argc - 1, &argv[1]);
 
-	struct REMap *map = re_map_create(32, 24);
+	struct REMap *map = re_map_create(32, 32);
 	init_map(map);
-	// map_print(map);
 	printf("\n");
 
 	struct SCGBuffer *pixel_buffer = stg_pixel_buffer_create(options.width, options.height);
@@ -75,12 +76,12 @@ int main(int argc, char **argv)
 
 	volatile struct Player player = { 0.5, map->height - 0.5, 0.0625 };
 
-	struct CrossThreadData data = { .p_player = &player, .quit = false };
+	struct CrossThreadData data = { .p_player = &player, .map = map, .quit = false };
 	pthread_t input_thread;
 	pthread_create(&input_thread, NULL, input_loop_func, &data);
 
 	while (!data.quit) {
-		draw_frame(map, pixel_buffer, player.pos_x, player.pos_y, player.rotation);
+		draw_frame(map, pixel_buffer, player.x, player.y, player.rotation);
 		usleep(1000000 / 60);
 	}
 
@@ -274,6 +275,72 @@ static int32_t min_int32(int32_t a, int32_t b)
 	return (a < b) ? a : b;
 }
 
+static int32_t move_player(volatile struct Player *p_player, double dx, double dy, struct REMap *map)
+{
+	bool can_move_x = true;
+	bool can_move_y = true;
+
+	double x_new = p_player->x + dx;
+	double y_new = p_player->y + dy;
+
+	int64_t cell_x = (int64_t) p_player->x; // no floor--should never be negative
+	int64_t cell_y = (int64_t) p_player->y; // ^^^
+	int64_t cell_x_new = (int64_t) floor(x_new);
+	int64_t cell_y_new = (int64_t) floor(y_new);
+
+	if (cell_x != cell_x_new) {
+		if (!re_map_coords_in_bounds(map, cell_x_new, cell_y)) {
+			can_move_x = false;
+		} else {
+			struct REMapCell cell_current = re_map_get_cell(map, cell_x, cell_y);
+			struct REMapCell cell_new = re_map_get_cell(map, cell_x_new, cell_y);
+
+			enum Material passed_wall_materials[2];
+			if (cell_x_new < cell_x) {
+				passed_wall_materials[0] = cell_current.material_left;
+				passed_wall_materials[1] = cell_new.material_right;
+			} else {
+				passed_wall_materials[0] = cell_current.material_right;
+				passed_wall_materials[1] = cell_new.material_left;
+			}
+
+			if (passed_wall_materials[0] != FLOOR || passed_wall_materials[1] != FLOOR) {
+				can_move_x = false;
+			}
+		}
+	}
+	if (cell_y != cell_y_new) {
+		if (!re_map_coords_in_bounds(map, cell_x, cell_y_new)) {
+			can_move_y = false;
+		} else {
+			struct REMapCell cell_current = re_map_get_cell(map, cell_x, cell_y);
+			struct REMapCell cell_new = re_map_get_cell(map, cell_x, cell_y_new);
+
+			enum Material passed_wall_materials[2];
+			if (cell_y_new < cell_y) {
+				passed_wall_materials[0] = cell_current.material_bottom;
+				passed_wall_materials[1] = cell_new.material_top;
+			} else {
+				passed_wall_materials[0] = cell_current.material_top;
+				passed_wall_materials[1] = cell_new.material_bottom;
+			}
+
+			if (passed_wall_materials[0] != FLOOR || passed_wall_materials[1] != FLOOR) {
+				can_move_y = false;
+			}
+		}
+	}
+
+	if (can_move_x) {
+		p_player->x += dx;
+	}
+	if (can_move_y) {
+		p_player->y += dy;
+	}
+
+	return can_move_x * 2 + can_move_y;
+}
+
 void *input_loop_func(void *vp_data)
 {
 	struct CrossThreadData *p_data = (struct CrossThreadData *) vp_data;
@@ -292,23 +359,20 @@ void *input_loop_func(void *vp_data)
 			p_data->quit = true;
 			break;
 		case 'w':
-			angle_to_vector(p_player->rotation, speed, &move_x, &move_y); p_player->pos_x += move_x;
-			p_player->pos_y += move_y;
+			angle_to_vector(p_player->rotation, speed, &move_x, &move_y);
+			move_player(p_player, move_x, move_y, p_data->map);
 			break;
 		case 's':
 			angle_to_vector(p_player->rotation + PI, speed, &move_x, &move_y);
-			p_player->pos_x += move_x;
-			p_player->pos_y += move_y;
+			move_player(p_player, move_x, move_y, p_data->map);
 			break;
 		case 'a':
 			angle_to_vector(p_player->rotation + PI / 2, speed, &move_x, &move_y);
-			p_player->pos_x += move_x;
-			p_player->pos_y += move_y;
+			move_player(p_player, move_x, move_y, p_data->map);
 			break;
 		case 'd':
 			angle_to_vector(p_player->rotation - PI / 2, speed, &move_x, &move_y);
-			p_player->pos_x += move_x;
-			p_player->pos_y += move_y;
+			move_player(p_player, move_x, move_y, p_data->map);
 			break;
 		case 'j':
 			p_player->rotation += PLAYER_TURN_SPEED;
