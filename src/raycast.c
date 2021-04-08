@@ -295,6 +295,7 @@ static int32_t move_player(volatile struct Player *p_player, double dx, double d
 	int64_t cell_x_new = (int64_t) floor(x_new);
 	int64_t cell_y_new = (int64_t) floor(y_new);
 
+	// check x collision
 	if (cell_x != cell_x_new) {
 		if (!re_map_coords_in_bounds(map, cell_x_new, cell_y)) {
 			can_move_x = false;
@@ -316,6 +317,8 @@ static int32_t move_player(volatile struct Player *p_player, double dx, double d
 			}
 		}
 	}
+
+	// check y collision
 	if (cell_y != cell_y_new) {
 		if (!re_map_coords_in_bounds(map, cell_x, cell_y_new)) {
 			can_move_y = false;
@@ -334,6 +337,41 @@ static int32_t move_player(volatile struct Player *p_player, double dx, double d
 
 			if (passed_wall_materials[0] != WALL_NONE || passed_wall_materials[1] != WALL_NONE) {
 				can_move_y = false;
+			}
+		}
+	}
+
+	// special case when crossing x and y at the same time
+	// (prevents walking through convex corners)
+	if (cell_x != cell_x_new && cell_y != cell_y_new) {
+		struct REMapCell cell_pass_x = re_map_get_cell(map, cell_x_new, cell_y);
+		struct REMapCell cell_pass_y = re_map_get_cell(map, cell_x, cell_y_new);
+		struct REMapCell cell_new = re_map_get_cell(map, cell_x_new, cell_y_new);
+
+		enum WallMaterial passed_wall_materials[4];
+		if (cell_x_new < cell_x) {
+			passed_wall_materials[0] = cell_pass_x.material_left;
+			passed_wall_materials[1] = cell_new.material_right;
+		} else {
+			passed_wall_materials[0] = cell_pass_x.material_right;
+			passed_wall_materials[1] = cell_new.material_left;
+		}
+
+		if (cell_y_new < cell_y) {
+			passed_wall_materials[2] = cell_pass_y.material_bottom;
+			passed_wall_materials[3] = cell_new.material_top;
+		} else {
+			passed_wall_materials[2] = cell_pass_y.material_top;
+			passed_wall_materials[3] = cell_new.material_bottom;
+		}
+
+		if (passed_wall_materials[0] != WALL_NONE || passed_wall_materials[1] != WALL_NONE
+				|| passed_wall_materials[2] != WALL_NONE || passed_wall_materials[3] != WALL_NONE) {
+			
+			if (dx > dy) {
+				can_move_y = false;
+			} else {
+				can_move_x = false;
 			}
 		}
 	}
