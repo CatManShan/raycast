@@ -19,13 +19,13 @@
 #define PI 3.14159265358979323846
 #define CTRL_C '\003'
 
-enum Material {
-	OUT_OF_BOUNDS = SCG_COLOR_BRIGHT_BLACK,
-	FLOOR = SCG_COLOR_BLACK,
-	BLUE_WALL = SCG_COLOR_BLUE,
-	BRIGHT_BLUE_WALL = SCG_COLOR_BRIGHT_BLUE,
-	RED_WALL = SCG_COLOR_RED,
-	GREEN_WALL = SCG_COLOR_GREEN
+enum WallMaterial {
+	WALL_OUT_OF_BOUNDS = SCG_COLOR_BRIGHT_BLACK,
+	WALL_NONE = SCG_COLOR_BLACK,
+	WALL_BLUE = SCG_COLOR_BLUE,
+	WALL_BRIGHT_BLUE = SCG_COLOR_BRIGHT_BLUE,
+	WALL_RED = SCG_COLOR_RED,
+	WALL_GREEN = SCG_COLOR_GREEN
 };
 
 struct Options {
@@ -133,33 +133,33 @@ static struct Options parse_options(int argc, char **argv)
 
 static void init_map(struct REMap *map)
 {
-	re_map_fill(map, RE_MAP_CELL_SOLID(FLOOR));
+	re_map_fill(map, RE_MAP_CELL_SOLID(WALL_NONE));
 
 	struct Maze *maze = maze_create(map->width, map->height);
 	maze_generate(maze);
 
 	for (uint32_t row = 0; row < maze->height; row++) {
 		for (uint32_t col = 0; col < maze->width; col++) {
-			struct REMapCell cell = RE_MAP_CELL_SOLID(FLOOR);
+			struct REMapCell cell = RE_MAP_CELL_SOLID(WALL_NONE);
 
 			if (maze_has_wall(maze, col, row, MAZE_WALL_TOP)) {
-				cell.material_top = BRIGHT_BLUE_WALL;
+				cell.material_top = WALL_BRIGHT_BLUE;
 			}
 			if (maze_has_wall(maze, col, row, MAZE_WALL_RIGHT)) {
-				cell.material_right = BLUE_WALL;
+				cell.material_right = WALL_BLUE;
 			}
 			if (maze_has_wall(maze, col, row, MAZE_WALL_BOTTOM)) {
-				cell.material_bottom = BRIGHT_BLUE_WALL;
+				cell.material_bottom = WALL_BRIGHT_BLUE;
 			}
 			if (maze_has_wall(maze, col, row, MAZE_WALL_LEFT)) {
-				cell.material_left = BLUE_WALL;
+				cell.material_left = WALL_BLUE;
 			}
 
 			if (col == 0 && row == 0) {
-				cell.material_left = RED_WALL;
+				cell.material_left = WALL_RED;
 			}
 			if (col == maze->width - 1 && row == maze->height - 1) {
-				cell.material_right = GREEN_WALL;
+				cell.material_right = WALL_GREEN;
 			}
 
 			re_map_set_cell(map, col, (map->height - 1) - row, cell);
@@ -176,14 +176,14 @@ static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double
 
 	for (int32_t row = 0; row < screen_height; row++) {
 		for (int32_t col = 0; col < screen_width; col++) {
-			stg_pixel_buffer_set(pixel_buffer, col, row, FLOOR);
+			stg_pixel_buffer_set(pixel_buffer, col, row, WALL_NONE);
 		}
 	}
 
 	int32_t scaler_dimension = min_int32(screen_width, screen_height);
 
 	double lengths[screen_width];
-	enum Material materials[screen_width];
+	enum WallMaterial materials[screen_width];
 
 	// Calculate values
 	for (int32_t line = 0; line < screen_width; line++)
@@ -191,8 +191,8 @@ static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double
 		double line_center_offset = (int32_t) line - (int32_t) screen_width / 2;
 		double rel_angle = -vector_to_angle(1, line_center_offset / (scaler_dimension));
 
-		enum Material collided_material;
-		double forward_distance = re_cast_ray(map, origin_x, origin_y, forward_angle, rel_angle, FLOOR, OUT_OF_BOUNDS, &collided_material);
+		enum WallMaterial collided_material;
+		double forward_distance = re_cast_ray(map, origin_x, origin_y, forward_angle, rel_angle, WALL_NONE, WALL_OUT_OF_BOUNDS, &collided_material);
 
 		double length = scaler_dimension / forward_distance;
 
@@ -214,7 +214,7 @@ static void draw_frame(struct REMap *map, struct SCGBuffer *pixel_buffer, double
 			end = screen_height;
 		}
 
-		enum Material material = materials[line];
+		enum WallMaterial material = materials[line];
 		for (int32_t row = start; row < end; row++) {
 			stg_pixel_buffer_set(pixel_buffer, line, row, material);
 		}
@@ -302,7 +302,7 @@ static int32_t move_player(volatile struct Player *p_player, double dx, double d
 			struct REMapCell cell_current = re_map_get_cell(map, cell_x, cell_y);
 			struct REMapCell cell_new = re_map_get_cell(map, cell_x_new, cell_y);
 
-			enum Material passed_wall_materials[2];
+			enum WallMaterial passed_wall_materials[2];
 			if (cell_x_new < cell_x) {
 				passed_wall_materials[0] = cell_current.material_left;
 				passed_wall_materials[1] = cell_new.material_right;
@@ -311,7 +311,7 @@ static int32_t move_player(volatile struct Player *p_player, double dx, double d
 				passed_wall_materials[1] = cell_new.material_left;
 			}
 
-			if (passed_wall_materials[0] != FLOOR || passed_wall_materials[1] != FLOOR) {
+			if (passed_wall_materials[0] != WALL_NONE || passed_wall_materials[1] != WALL_NONE) {
 				can_move_x = false;
 			}
 		}
@@ -323,7 +323,7 @@ static int32_t move_player(volatile struct Player *p_player, double dx, double d
 			struct REMapCell cell_current = re_map_get_cell(map, cell_x, cell_y);
 			struct REMapCell cell_new = re_map_get_cell(map, cell_x, cell_y_new);
 
-			enum Material passed_wall_materials[2];
+			enum WallMaterial passed_wall_materials[2];
 			if (cell_y_new < cell_y) {
 				passed_wall_materials[0] = cell_current.material_bottom;
 				passed_wall_materials[1] = cell_new.material_top;
@@ -332,7 +332,7 @@ static int32_t move_player(volatile struct Player *p_player, double dx, double d
 				passed_wall_materials[1] = cell_new.material_bottom;
 			}
 
-			if (passed_wall_materials[0] != FLOOR || passed_wall_materials[1] != FLOOR) {
+			if (passed_wall_materials[0] != WALL_NONE || passed_wall_materials[1] != WALL_NONE) {
 				can_move_y = false;
 			}
 		}
