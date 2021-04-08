@@ -25,7 +25,7 @@ enum Material {
 	BLUE_WALL = SCG_COLOR_BLUE,
 	BRIGHT_BLUE_WALL = SCG_COLOR_BRIGHT_BLUE,
 	RED_WALL = SCG_COLOR_RED,
-	YELLOW_WALL = SCG_COLOR_YELLOW
+	GREEN_WALL = SCG_COLOR_GREEN
 };
 
 struct Options {
@@ -153,6 +153,13 @@ static void init_map(struct REMap *map)
 			}
 			if (maze_has_wall(maze, col, row, MAZE_WALL_LEFT)) {
 				cell.material_left = BLUE_WALL;
+			}
+
+			if (col == 0 && row == 0) {
+				cell.material_left = RED_WALL;
+			}
+			if (col == maze->width - 1 && row == maze->height - 1) {
+				cell.material_right = GREEN_WALL;
 			}
 
 			re_map_set_cell(map, col, (map->height - 1) - row, cell);
