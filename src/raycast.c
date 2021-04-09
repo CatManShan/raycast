@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 	
 	struct Options options = parse_options(argc - 1, &argv[1]);
 
-	struct REMap *map = re_map_create(8, 8);
+	struct REMap *map = re_map_create(16, 16);
 	init_map(map);
 	printf("\n");
 
@@ -394,7 +394,7 @@ void *input_loop_func(void *vp_data)
 
 	while (!p_data->quit) {
 		const double PLAYER_BASE_SPEED = 0.125;
-		const double PLAYER_TURN_SPEED = PI / 48;
+		const double PLAYER_TURN_SPEED = PI / 32;
 
 		double move_x, move_y;
 
