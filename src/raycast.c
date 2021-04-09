@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 	
 	struct Options options = parse_options(argc - 1, &argv[1]);
 
-	struct REMap *map = re_map_create(32, 32);
+	struct REMap *map = re_map_create(8, 8);
 	init_map(map);
 	printf("\n");
 

@@ -16,6 +16,7 @@
 
 typedef struct Fixed64 fixed64_t;
 
+static uint8_t get_angle_quadrant(double reduced_angle);
 static double reduce_angle(double angle);
 static double distance_of_points(double x1, double y1, double x2, double y2);
 
@@ -51,12 +52,6 @@ void re_map_fill(struct REMap *map, struct REMapCell cell)
 	for (uint64_t index = 0; index < area; index++) {
 		map->cells[index] = cell;
 	}
-}
-
-/* NOTE: only works for angles >=  0 and < 2PI */
-static uint8_t get_angle_quadrant(double reduced_angle)
-{
-	return (uint8_t) (reduced_angle / (PI / 2) + 1);
 }
 
 double re_cast_ray(struct REMap *map, double origin_x, double origin_y, double forward_angle, double rel_angle,
@@ -186,7 +181,13 @@ bool re_map_coords_in_bounds(struct REMap *map, int64_t x, int64_t y)
 	return (x >= 0 && y >= 0 && x < map->width && y < map->height);
 }
 
-static double reduce_angle(double angle)
+/* NOTE: only works for angles >=  0 and < 2PI */
+uint8_t get_angle_quadrant(double reduced_angle)
+{
+	return (uint8_t) (reduced_angle / (PI / 2) + 1);
+}
+
+double reduce_angle(double angle)
 {
 	if (angle < 0)
 	{
@@ -205,7 +206,7 @@ static double reduce_angle(double angle)
 	return angle;
 }
 
-static double distance_of_points(double x1, double y1, double x2, double y2)
+double distance_of_points(double x1, double y1, double x2, double y2)
 {
 	double dx = x2 - x1;
 	double dy = y2 - y1;

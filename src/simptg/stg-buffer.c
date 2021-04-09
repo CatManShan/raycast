@@ -125,23 +125,6 @@ void stg_buffer_print(struct SCGBuffer *buffer)
 	fflush(stdout);
 }
 
-static void stg_print_cell(struct SCGCell cell)
-{
-	uint16_t ansi_fg_code = stg_color_code_to_ansi_fg(cell.fg_color);
-	uint16_t ansi_bg_code = stg_color_code_to_ansi_bg(cell.bg_color);
-	printf("\x1b[%d;%dm%c\x1b[0m", ansi_fg_code, ansi_bg_code, cell.ch); // Print char with specified fg and bg color
-}
-
-static uint16_t stg_color_code_to_ansi_fg(enum SCGColorCode color_code)
-{
-	return color_code + 39;
-}
-
-static uint16_t stg_color_code_to_ansi_bg(enum SCGColorCode color_code)
-{
-	return color_code + 49;
-}
-
 int stg_input_adjust()
 {
 	return system("stty raw -echo");
@@ -150,5 +133,22 @@ int stg_input_adjust()
 int stg_input_restore()
 {
 	return system("stty cooked echo");
+}
+
+void stg_print_cell(struct SCGCell cell)
+{
+	uint16_t ansi_fg_code = stg_color_code_to_ansi_fg(cell.fg_color);
+	uint16_t ansi_bg_code = stg_color_code_to_ansi_bg(cell.bg_color);
+	printf("\x1b[%d;%dm%c\x1b[0m", ansi_fg_code, ansi_bg_code, cell.ch); // Print char with specified fg and bg color
+}
+
+uint16_t stg_color_code_to_ansi_fg(enum SCGColorCode color_code)
+{
+	return color_code + 39;
+}
+
+uint16_t stg_color_code_to_ansi_bg(enum SCGColorCode color_code)
+{
+	return color_code + 49;
 }
 

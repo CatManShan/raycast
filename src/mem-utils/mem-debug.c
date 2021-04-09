@@ -117,13 +117,13 @@ void debug_set_out_stream(FILE *stream)
 	out_stream = stream;
 }
 
-static void pointer_list_init()
+void pointer_list_init()
 {
 	pointer_list.size = 8;
 	pointer_list.arr = malloc(pointer_list.size * sizeof pointer_list.arr[0]);
 }
 
-static void pointer_list_destroy()
+void pointer_list_destroy()
 {
 	pointer_list.size = 0;
 	pointer_list.size = 0;
@@ -132,7 +132,7 @@ static void pointer_list_destroy()
 	pointer_list.arr = NULL;
 }
 
-static void pointer_list_add(void *ptr)
+void pointer_list_add(void *ptr)
 {
 	pointer_list.arr[pointer_list.length] = ptr;
 	++pointer_list.length;
@@ -143,7 +143,7 @@ static void pointer_list_add(void *ptr)
 	}
 }
 
-static void pointer_list_remove(void *ptr)
+void pointer_list_remove(void *ptr)
 {
 	size_t index = pointer_list_find(ptr);
 	
@@ -158,7 +158,7 @@ static void pointer_list_remove(void *ptr)
 	}
 }
 
-static size_t pointer_list_find(void *ptr)
+size_t pointer_list_find(void *ptr)
 {
 	for (size_t index = 0; index < pointer_list.length; index++) {
 		if (pointer_list.arr[index] == ptr) {

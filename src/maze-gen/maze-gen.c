@@ -15,8 +15,10 @@ static void maze_init(struct Maze *maze, uint32_t width, uint32_t height);
 static bool cell_has_wall(struct MazeCell *cell, enum MazeCellWall wall);
 static void cell_add_wall(struct MazeCell *cell, enum MazeCellWall wall);
 static void clear_cell_wall(struct MazeCell *cell, enum MazeCellWall wall);
-static void get_cell_neighbor_position(int64_t col, int64_t row, enum MazeCellWall shared_wall, int64_t *neighbor_col, int64_t *neighbor_row);
-static uint8_t get_cell_neighbor_positions(struct Maze *maze, uint32_t col, uint32_t row, struct MazeCellPosition *neighbor_positions);
+static void get_cell_neighbor_position(int64_t col, int64_t row, enum MazeCellWall shared_wall, int64_t *neighbor_col,
+		int64_t *neighbor_row);
+static uint8_t get_cell_neighbor_positions(struct Maze *maze, uint32_t col, uint32_t row,
+		struct MazeCellPosition *neighbor_positions);
 static uint8_t get_cell_unvisited_neighbor_positions(struct Maze *maze, uint32_t col, uint32_t row,
 		struct MazeCellPosition *unvisited_neighbor_positions);
 
@@ -52,8 +54,8 @@ void maze_generate(struct Maze *maze)
 		struct MazeCellPosition current_position = position_stack[position_stack_length - 1];
 
 		struct MazeCellPosition unvisited_neighbor_positions[4];
-		uint8_t unvisited_neighbor_count = get_cell_unvisited_neighbor_positions(maze, current_position.col, current_position.row,
-				unvisited_neighbor_positions);
+		uint8_t unvisited_neighbor_count = get_cell_unvisited_neighbor_positions(maze, current_position.col,
+				current_position.row, unvisited_neighbor_positions);
 
 		if (unvisited_neighbor_count > 0) {
 			uint8_t random_index = rand() % unvisited_neighbor_count;
@@ -129,7 +131,7 @@ bool maze_is_position_in_bounds(struct Maze *maze, int64_t col, int64_t row)
 	return (col >= 0 && row >= 0 && col < maze->width && row < maze->height);
 }
 
-static void maze_init(struct Maze *maze, uint32_t width, uint32_t height)
+void maze_init(struct Maze *maze, uint32_t width, uint32_t height)
 {
 	for (uint32_t index = 0; index < (width * height); index++) {
 		maze->cells[index] = (struct MazeCell) {
@@ -139,28 +141,30 @@ static void maze_init(struct Maze *maze, uint32_t width, uint32_t height)
 	};
 }
 
-static bool cell_has_wall(struct MazeCell *cell, enum MazeCellWall wall)
+bool cell_has_wall(struct MazeCell *cell, enum MazeCellWall wall)
 {
 	return (cell->walls & (1 << wall));
 }
 
-static void cell_add_wall(struct MazeCell *cell, enum MazeCellWall wall)
+void cell_add_wall(struct MazeCell *cell, enum MazeCellWall wall)
 {
 	cell->walls |= (1 << wall);
 }
 
-static void clear_cell_wall(struct MazeCell *cell, enum MazeCellWall wall)
+void clear_cell_wall(struct MazeCell *cell, enum MazeCellWall wall)
 {
 	cell->walls &= ~(1 << wall);
 }
 
-static void get_cell_neighbor_position(int64_t col, int64_t row, enum MazeCellWall shared_wall, int64_t *neighbor_col, int64_t *neighbor_row)
+void get_cell_neighbor_position(int64_t col, int64_t row, enum MazeCellWall shared_wall, int64_t *neighbor_col,
+		int64_t *neighbor_row)
 {
 	*neighbor_col = col + (shared_wall == MAZE_WALL_RIGHT) - (shared_wall == MAZE_WALL_LEFT);
 	*neighbor_row = row + (shared_wall == MAZE_WALL_BOTTOM) - (shared_wall == MAZE_WALL_TOP);
 }
 
-static uint8_t get_cell_neighbor_positions(struct Maze *maze, uint32_t col, uint32_t row, struct MazeCellPosition *neighbor_positions)
+uint8_t get_cell_neighbor_positions(struct Maze *maze, uint32_t col, uint32_t row,
+		struct MazeCellPosition *neighbor_positions)
 {
 		uint8_t neighbor_count = 0;
 		if (col > 0) {
@@ -183,7 +187,7 @@ static uint8_t get_cell_neighbor_positions(struct Maze *maze, uint32_t col, uint
 		return neighbor_count;
 }
 
-static uint8_t get_cell_unvisited_neighbor_positions(struct Maze *maze, uint32_t col, uint32_t row,
+uint8_t get_cell_unvisited_neighbor_positions(struct Maze *maze, uint32_t col, uint32_t row,
 		struct MazeCellPosition *unvisited_neighbor_positions)
 {
 	struct MazeCellPosition neighbor_positions[4];
