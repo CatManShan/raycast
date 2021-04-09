@@ -135,6 +135,7 @@ static void init_map(struct REMap *map)
 {
 	re_map_fill(map, RE_MAP_CELL_SOLID(WALL_NONE));
 
+	srand(time(NULL));
 	struct Maze *maze = maze_create(map->width, map->height);
 	maze_generate(maze);
 
